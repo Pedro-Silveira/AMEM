@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { NativeBaseProvider } from "native-base";
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
@@ -7,24 +7,42 @@ import Footer from "./src/components/footer";
 import CadastrarEvento from "./src/components/cadastrarEvento";
 import ConsultarEvento from "./src/components/consultarEvento";
 import Login from "./src/components/login";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { auth } from "./src/services/firebaseConfig";
 
 const Stack = createNativeStackNavigator();
+const InsideStack = createNativeStackNavigator();
+
+function InsideLayout(){
+  return (
+    <>
+      <Navbar />
+      <InsideStack.Navigator screenOptions={{headerShown: false}}>
+        <InsideStack.Screen name="Painel de Controle - AMEM" component={ConsultarEvento} />
+        <InsideStack.Screen name="Novo Evento - AMEM" component={CadastrarEvento} />
+      </InsideStack.Navigator>
+      <Footer />
+    </>
+  );
+};
 
 export default function App() {
-  const [user, setUser] = useState();
+  const [user, setUser] = useState<User | null>(null);
 
-  return !user ? <NavigationContainer>
-  <NativeBaseProvider><Login setUser={setUser} /></NativeBaseProvider>
-    </NavigationContainer> : (
-    <NavigationContainer>
-      <NativeBaseProvider>
-        <Navbar />
-        <Stack.Navigator screenOptions={{headerShown: false}}>
-          <Stack.Screen name="AMEM" component={ConsultarEvento} />
-          <Stack.Screen name="Novo Evento - AMEM" component={CadastrarEvento} />
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      console.log('user', user);
+      setUser(user);
+    });
+  }, []);
+
+  return (
+    <NativeBaseProvider>
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName="Autenticação - AMEM" screenOptions={{headerShown: false}}>
+          {!user ? (<Stack.Screen name="Autenticação - AMEM" component={Login} />) : (<Stack.Screen name="AMEM" component={InsideLayout} />)}
         </Stack.Navigator>
-        <Footer />
-      </NativeBaseProvider>
-    </NavigationContainer>
+      </NavigationContainer>
+    </NativeBaseProvider>
   );
 }
