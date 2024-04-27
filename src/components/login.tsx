@@ -1,20 +1,22 @@
 import React, { useState } from "react";
 import { signInWithEmailAndPassword, User } from "firebase/auth";
 import { auth } from "../services/firebaseConfig";
-import { Box, Button, Input, Image, ScrollView, Icon, Text, Link } from "native-base";
+import { Box, Button, Input, Image, ScrollView, Icon, Text, Link, useToast } from "native-base";
 import { MaterialIcons } from '@expo/vector-icons';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const logina = auth;
-    var ano = new Date().getFullYear();
+    const toast = useToast();
+    const ano = new Date().getFullYear();
 
     const handleLogin = async () => {
         await signInWithEmailAndPassword(logina, email, senha)
         .catch((error) => {
-            const errorMessage = error.message;
-            console.log(errorMessage);
+            toast.show({
+                description: "Erro: " + error
+              })
         });
     };
 

@@ -1,7 +1,8 @@
 import React from "react";
-import { Box, HamburgerIcon, Icon, Menu, Pressable, Image } from "native-base";
+import { Box, HamburgerIcon, Icon, Menu, Pressable, Image, Divider } from "native-base";
 import { useNavigation } from "@react-navigation/native";
-import { MaterialIcons, FontAwesome } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
+import { auth } from "../services/firebaseConfig";
 
 export default function Navbar(){
     const navigation = useNavigation();
@@ -13,8 +14,11 @@ export default function Navbar(){
                             <HamburgerIcon size={5} color="white" />
                         </Pressable>;
                     }}>
-                        <Menu.Item onPress={() => navigation.navigate("Painel de Controle - AMEM" as never)}><Icon color="#000" as={FontAwesome} name="home" /> Painel de Controle</Menu.Item>
-                        <Menu.Item onPress={() => navigation.navigate("Novo Evento - AMEM" as never)}><Icon color="#000" as={FontAwesome} name="gear" /> Configurações</Menu.Item>
+                        <Menu.Item onPress={() => navigation.navigate("Painel de Controle - AMEM" as never)}> Painel de Controle</Menu.Item>
+                        <Divider my="2" w="100%" />
+                        <Menu.Item onPress={() => navigation.navigate("Novo Evento - AMEM" as never)}>Cadastrar Evento</Menu.Item>
+                        <Divider my="2" w="100%" />
+                        <Menu.Item onPress={() => auth.signOut()}>Sair</Menu.Item>
                     </Menu>
                     <Image height={30} width={75} marginLeft={5} resizeMode={"contain"} source={require("./../media/AMEM.png")} alt="AMEM" />
             </Box>
