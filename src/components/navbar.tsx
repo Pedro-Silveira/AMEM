@@ -16,7 +16,8 @@ export default function Navbar(){
                     }}>
                         <Menu.Item onPress={() => navigation.navigate("Painel de Controle - AMEM" as never)}> Painel de Controle</Menu.Item>
                         <Divider my="2" w="100%" />
-                        <Menu.Item onPress={() => navigation.navigate("Novo Evento - AMEM" as never)}>Cadastrar Evento</Menu.Item>
+                        <Menu.Item onPress={() => navigation.navigate("Cadastrar Evento - AMEM" as never)}>Cadastrar Evento</Menu.Item>
+                        <Menu.Item onPress={() => navigation.navigate("Novo Usuário - AMEM" as never)}>Novo Usuário</Menu.Item>
                         <Divider my="2" w="100%" />
                         <Menu.Item onPress={() => auth.signOut()}>Sair</Menu.Item>
                     </Menu>

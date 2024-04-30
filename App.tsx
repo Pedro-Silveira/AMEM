@@ -9,6 +9,7 @@ import ConsultarEvento from "./src/components/consultarEvento";
 import Login from "./src/components/login";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth } from "./src/services/firebaseConfig";
+import NovoUsuario from "./src/components/novoUsuario";
 
 const Stack = createNativeStackNavigator();
 const InsideStack = createNativeStackNavigator();
@@ -19,7 +20,8 @@ function InsideLayout(){
       <Navbar />
       <InsideStack.Navigator screenOptions={{headerShown: false}}>
         <InsideStack.Screen name="Painel de Controle - AMEM" component={ConsultarEvento} />
-        <InsideStack.Screen name="Novo Evento - AMEM" component={CadastrarEvento} />
+        <InsideStack.Screen name="Cadastrar Evento - AMEM" component={CadastrarEvento} />
+        <InsideStack.Screen name="Novo Usuário - AMEM" component={NovoUsuario} />
       </InsideStack.Navigator>
       <Footer />
     </>
