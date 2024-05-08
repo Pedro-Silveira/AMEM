@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Box, Button, CheckIcon, FormControl, Input, ScrollView, Select, Text, useToast, WarningOutlineIcon } from "native-base";
+import { StyleSheet } from "react-native";
 import { auth, db } from "../services/firebaseConfig";
 import { ref, set } from "firebase/database";
 import { useNavigation } from "@react-navigation/native";
@@ -27,8 +28,8 @@ const NovoUsuario = () => {
     };
 
     const validarUsuario = () => {
-        const nomeRegex = new RegExp(/[A-Za-z][A-Za-z0-9 ()-]?/);
-        const emailRegex = new RegExp(/([a-zA-Z0-9_.+-]+)@[a-zA-Z0-9_.+-]+\.[a-zA-Z0-9_.+-]/);
+        const nomeRegex = new RegExp(/^[a-zA-ZÀ-ÿ']{1,}(?: [a-zA-ZÀ-ÿ']{1,}){1,}$/);
+        const emailRegex = new RegExp(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/);
         const senhaRegex = new RegExp(/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9]).{8,}$/);
         let erros = 0;
 
@@ -114,43 +115,43 @@ const NovoUsuario = () => {
 
     return(
         <ScrollView contentContainerStyle={{width:'100%'}}>
-            <Box padding={50}>
-                <Box marginBottom={50}>
-                    <Text textAlign={"center"} bold fontSize={"3xl"}>Cadastrar Evento</Text>
-                    <Text textAlign={"center"} fontSize={"xl"}>Por gentileza, preencha os campos abaixo para cadastrar um novo evento.</Text>
+            <Box style={styles.boxCentral}>
+                <Box style={styles.box1}>
+                    <Text textAlign={"center"} bold fontSize={"3xl"}>Novo Usuário</Text>
+                    <Text textAlign={"center"} fontSize={"xl"}>Por gentileza, preencha os campos abaixo para cadastrar um novo usuário.</Text>
                 </Box>
-                <Box marginBottom={25}>
+                <Box style={styles.box2}>
                     <FormControl isRequired isInvalid={'nome' in erros}>
                         <FormControl.Label>Nome:</FormControl.Label>
-                        <Input value={nome} placeholder="Escolha um nome..." onChangeText={novoNome => setNome(novoNome)}/>
+                        <Input value={nome} placeholder="Escolha um nome..." onChangeText={novoNome => setNome(novoNome)} backgroundColor={"white"} size={"lg"} />
                         {'nome' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.nome}</FormControl.ErrorMessage>: ''
                         }
                     </FormControl>
                     <FormControl isRequired isInvalid={'email' in erros}>
                         <FormControl.Label>E-mail:</FormControl.Label>
-                        <Input value={email} placeholder="Insira o e-mail..." onChangeText={novoEmail => setEmail(novoEmail)}/>
+                        <Input value={email} placeholder="Insira o e-mail..." onChangeText={novoEmail => setEmail(novoEmail)} backgroundColor={"white"} size={"lg"}/>
                         {'email' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.email}</FormControl.ErrorMessage>: ''
                         }
                     </FormControl>
                     <FormControl isRequired isInvalid={'senha' in erros}>
                         <FormControl.Label>Senha:</FormControl.Label>
-                        <Input value={senha} type="password" placeholder="Escolha uma senha..." onChangeText={novaSenha => setSenha(novaSenha)}/>
+                        <Input value={senha} type="password" placeholder="Escolha uma senha..." onChangeText={novaSenha => setSenha(novaSenha)} backgroundColor={"white"} size={"lg"}/>
                         {'senha' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.senha}</FormControl.ErrorMessage>: ''
                         }
                     </FormControl>
                     <FormControl isRequired isInvalid={'senhaRepeticao' in erros}>
                         <FormControl.Label>Confirmar Senha:</FormControl.Label>
-                        <Input value={senhaRepeticao} type="password" placeholder="Repita a senha..." onChangeText={novaSenhaRepeticao => setSenhaRepeticao(novaSenhaRepeticao)}/>
+                        <Input value={senhaRepeticao} type="password" placeholder="Repita a senha..." onChangeText={novaSenhaRepeticao => setSenhaRepeticao(novaSenhaRepeticao)} backgroundColor={"white"} size={"lg"}/>
                         {'senhaRepeticao' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.senhaRepeticao}</FormControl.ErrorMessage>: ''
                         }
                     </FormControl>
                     <FormControl isRequired isInvalid={'permissao' in erros}>
                         <FormControl.Label>Permissão:</FormControl.Label>
-                        <Select selectedValue={permissao} onValueChange={novaPermissao => setPermissao(novaPermissao)} placeholder="Escolha uma permissão..." _selectedItem={{bg: "teal.600", endIcon: <CheckIcon size={1} />}}>
+                        <Select selectedValue={permissao} onValueChange={novaPermissao => setPermissao(novaPermissao)} placeholder="Escolha uma permissão..." _selectedItem={{bg: "teal.600", endIcon: <CheckIcon size={1} />}} backgroundColor={"white"} size={"lg"}>
                             <Select.Item label="Usuário" value="usuario" />
                             <Select.Item label="Editor" value="editor" />
                             <Select.Item label="Administrador" value="administrator" />
@@ -168,5 +169,17 @@ const NovoUsuario = () => {
         </ScrollView>
     );
 };
+
+const styles = StyleSheet.create({
+    boxCentral: {
+        padding: 50
+    },
+    box1: {
+        marginBottom: 50
+    },
+    box2: {
+        marginBottom: 25
+    }
+});
 
 export default NovoUsuario;
