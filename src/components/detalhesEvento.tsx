@@ -18,16 +18,15 @@ const DetalhesEvento = ({ route }: { route: any }) => {
     const [dados, setDados] = useState<any>([]);
 
     useEffect(() => {
-        const query = ref(db, "eventos/");
-        onValue(query, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                const novosUsuarios = Object.keys(data)
-                .map(key => ({
-                    id: key,
-                    ...data[key]
-                }));
-                setDados(novosUsuarios);
+        const eventoID = evento.id;
+        const eventoRef = ref(db, "eventos/" + evento.id);
+
+        onValue(eventoRef, (snapshot) => {
+            const eventoData = snapshot.val();
+
+            if (eventoData) {
+                const evento = [{ id: eventoID, ...eventoData }];
+                setDados(evento);
             } else {
                 setDados([]);
             }
@@ -40,7 +39,7 @@ const DetalhesEvento = ({ route }: { route: any }) => {
                 <Box style={styles.box1}>
                     <Text textAlign={"left"} bold fontSize={"3xl"}>Detalhes do Evento</Text>
                 </Box>
-                <Box style={styles.box2}>
+                <Box style={styles.box1}>
                     <FormControl isRequired isInvalid={'nome' in erros}>
                         <FormControl.Label>Nome:</FormControl.Label>
                         <Input value={nome} placeholder="Ex.: Ação de Graças" onChangeText={novoNome => setNome(novoNome)} backgroundColor={"white"} size={"lg"} />
@@ -77,19 +76,22 @@ const DetalhesEvento = ({ route }: { route: any }) => {
                         }
                     </FormControl>
                 </Box>
+                <Box style={styles.box2}>
+                    <Text textAlign={"left"} bold fontSize={"xl"}>Doações</Text>
+                </Box>
                 <Box borderWidth={1} borderColor={"#D4D4D4"} backgroundColor={"#fff"}>
-            {dados.map((item: any, index: any) => (
-                    <Box key={index} borderBottomWidth={1} borderBottomColor={"#D4D4D4"} py="2" pl="4" pr={5}>
-                        <HStack space={[2, 3]} justifyContent="space-between" alignItems={"center"}>
-                            <VStack>
-                                <Text bold>
-                                    {item.usuarios}
-                                </Text>
-                            </VStack>
-                        </HStack>
-                    </Box>
-            ))}
-        </Box>
+                    {dados.map((item: any, index: any) => (
+                        <Box key={index} borderBottomWidth={1} borderBottomColor={"#D4D4D4"} py="2" pl="4" pr={5}>
+                            <HStack space={[2, 3]} justifyContent="space-between" alignItems={"center"}>
+                                <VStack>
+                                    <Text bold>
+                                        {item.usuarios}
+                                    </Text>
+                                </VStack>
+                            </HStack>
+                        </Box>
+                    ))}
+                </Box>
             </Box>
         </ScrollView>
     );
@@ -103,7 +105,7 @@ const styles = StyleSheet.create({
         marginBottom: 25
     },
     box2: {
-        marginBottom: 25
+        marginBottom: 5
     }
 });
 
