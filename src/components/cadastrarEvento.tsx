@@ -87,7 +87,7 @@ const cadastrarEvento = () => {
     };
 
     const validarEvento = () => {
-        const nomeRegex = new RegExp(/^[a-zA-Z]+(?: [a-zA-Z]+)*$/);
+        const nomeRegex = new RegExp(/^[A-Za-zÀ-ú]+(?:\s[A-Za-zÀ-ú]+)*$/);
         const dataRegex = new RegExp(/^\d{2}\/\d{2}\/\d{4}$/);
         const localRegex = new RegExp(/^[^\s].*$/);
         const investimentoRegex = new RegExp(/^(?:0|[1-9]\d{0,2}(?:\.\d{3})*(?:,\d{1,2})?|,\d{1,2})$/);

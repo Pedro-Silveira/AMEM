@@ -28,7 +28,7 @@ const NovoUsuario = () => {
     };
 
     const validarUsuario = () => {
-        const nomeRegex = new RegExp(/^[a-zA-ZÀ-ÿ']{1,}(?: [a-zA-ZÀ-ÿ']{1,}){1,}$/);
+        const nomeRegex = new RegExp(/^[A-Za-zÀ-ú]+(?:\s[A-Za-zÀ-ú]+)*$/);
         const emailRegex = new RegExp(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/);
         const senhaRegex = new RegExp(/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9]).{8,}$/);
         let erros = 0;

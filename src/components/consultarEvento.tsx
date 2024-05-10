@@ -1,11 +1,13 @@
-import { Box, Checkbox, HStack, Icon, ScrollView, Spacer, Text, VStack } from "native-base";
+import { Box, HStack, Icon, Pressable, ScrollView, Spacer, Text, VStack } from "native-base";
 import React, { useEffect, useState } from "react";
 import { db } from "../services/firebaseConfig";
 import { onValue, ref } from "firebase/database";
 import { FontAwesome } from '@expo/vector-icons';
+import { useNavigation } from "@react-navigation/native";
 
-const buscarUsuarios = () => {
+const exibirEventos = () => {
     const [dados, setDados] = useState<any>([]);
+    const navigation = useNavigation<any>();
 
     useEffect(() => {
         const query = ref(db, "eventos/");
@@ -33,20 +35,22 @@ const buscarUsuarios = () => {
     return (
         <Box borderWidth={1} borderColor={"#D4D4D4"} backgroundColor={"#fff"}>
             {dados.map((item: any, index: any) => (
-                <Box key={index} borderBottomWidth={1} borderBottomColor={"#D4D4D4"} py="2" pl="4" pr={5}>
-                    <HStack space={[2, 3]} justifyContent="space-between" alignItems={"center"}>
-                        <VStack>
-                            <Text bold>
-                                {item.nome}
-                            </Text>
-                            <Text>
-                                {calcularDias(item.data)}
-                            </Text>
-                        </VStack>
-                        <Spacer />
-                        <Icon as={<FontAwesome name={"angle-right"} />} size={5} color="#bebebe" />
-                    </HStack>
-                </Box>
+                <Pressable key={index} onPress={() => navigation.navigate("Detalhes do Evento - AMEM", { evento: item })}>
+                    <Box key={index} borderBottomWidth={1} borderBottomColor={"#D4D4D4"} py="2" pl="4" pr={5}>
+                        <HStack space={[2, 3]} justifyContent="space-between" alignItems={"center"}>
+                            <VStack>
+                                <Text bold>
+                                    {item.nome}
+                                </Text>
+                                <Text>
+                                    {calcularDias(item.data)}
+                                </Text>
+                            </VStack>
+                            <Spacer />
+                            <Icon as={<FontAwesome name={"angle-right"} />} size={5} color="#bebebe" />
+                        </HStack>
+                    </Box>
+                </Pressable>
             ))}
         </Box>
     );
@@ -69,7 +73,7 @@ export default function ConsultarEvento(){
         <ScrollView contentContainerStyle={{width:'100%'}}>
             <Box padding={50} flex={1}>
                 <Text textAlign={"left"} bold fontSize={"3xl"} mb={25}>Painel de Controle</Text>
-                {buscarUsuarios()}
+                {exibirEventos()}
             </Box>
         </ScrollView>
     );
