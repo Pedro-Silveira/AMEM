@@ -1,9 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, Checkbox, FormControl, HStack, Input, ScrollView, Spacer, Text, TextArea, useToast, VStack, WarningOutlineIcon } from "native-base";
 import { StyleSheet } from "react-native";
+import { Box, Button, Checkbox, FormControl, HStack, Input, ScrollView, Spacer, Text, TextArea, useToast, VStack, WarningOutlineIcon } from "native-base";
+import { useNavigation } from "@react-navigation/native";
 import { db } from "../services/firebaseConfig";
 import { ref, push, onValue } from "firebase/database";
-import { useNavigation } from "@react-navigation/native";
+import showToast from "../util/showToast";
+
+const styles = StyleSheet.create({
+    boxCentral: {
+        padding: 50
+    },
+    box1: {
+        marginBottom: 50
+    },
+    box2: {
+        marginBottom: 25
+    }
+});
 
 const cadastrarEvento = () => {
     const [nome, setNome] = useState('');
@@ -16,7 +29,8 @@ const cadastrarEvento = () => {
     const navigation = useNavigation();
     const toast = useToast();
 
-    const handleCheckboxChange = (id: string) => {
+    // Adiciona ou remove usuários selecionados pelo checkbox.
+    const listaCheckbox = (id: string) => {
         if (usuarios.includes(id)) {
             setUsuarios(usuarios.filter(item => item !== id));
         } else {
@@ -24,13 +38,26 @@ const cadastrarEvento = () => {
         }
     };
 
+    // Limpa os campos do formulário.
+    const limpar = () => {
+        setNome('');
+        setData('');
+        setLocal('');
+        setInvestimento('');
+        setObservacoes('');
+        setErros({});
+    };
+
+    // Busca e adiciona os usuários na lista.
     const buscarUsuarios = () => {
         const [dados, setDados] = useState<any>([]);
     
         useEffect(() => {
             const query = ref(db, "usuarios/");
+
             onValue(query, (snapshot) => {
                 const data = snapshot.val();
+
                 if (data) {
                     const novosUsuarios = Object.keys(data).map(key => ({
                         id: key,
@@ -43,11 +70,14 @@ const cadastrarEvento = () => {
                         if (nomeA < nomeB) {
                             return -1;
                         }
+
                         if (nomeA > nomeB) {
                             return 1;
                         }
+
                         return 0;
                     });
+
                     setDados(novosUsuarios);
                 } else {
                     setDados([]);
@@ -69,7 +99,7 @@ const cadastrarEvento = () => {
                                 </Text>
                             </VStack>
                             <Spacer />
-                            <Checkbox onChange={() => handleCheckboxChange(item.email)} _checked={{ bgColor: "#1C3D8C", borderColor: "#1C3D8C" }} value={item.email} />
+                            <Checkbox onChange={() => listaCheckbox(item.email)} _checked={{ bgColor: "#1C3D8C", borderColor: "#1C3D8C" }} value={item.email} />
                         </HStack>
                     </Box>
                 ))}
@@ -77,19 +107,10 @@ const cadastrarEvento = () => {
         );
     };
 
-    const limpar = () => {
-        setNome('');
-        setData('');
-        setLocal('');
-        setInvestimento('');
-        setObservacoes('');
-        setErros({});
-    };
-
+    // Valida os campos do formulário através de expressões regulares.
     const validarEvento = () => {
-        const nomeRegex = new RegExp(/^[A-Za-zÀ-ú]+(?:\s[A-Za-zÀ-ú]+)*$/);
+        const nomeRegex = new RegExp(/^[^\s].*$/);
         const dataRegex = new RegExp(/^\d{2}\/\d{2}\/\d{4}$/);
-        const localRegex = new RegExp(/^[^\s].*$/);
         const investimentoRegex = new RegExp(/^(?:0|[1-9]\d{0,2}(?:\.\d{3})*(?:,\d{1,2})?|,\d{1,2})$/);
         let erros = 0;
 
@@ -113,7 +134,7 @@ const cadastrarEvento = () => {
             erros++;
         }
 
-        if (!localRegex.test(local)){
+        if (!nomeRegex.test(local)){
             setErros(errosAnteriores => ({
                 ...errosAnteriores,
                 local: 'O nome do local inserido é inválido.',
@@ -132,35 +153,30 @@ const cadastrarEvento = () => {
         }
 
         if ( erros == 0 ) {
-            addEvento();
+            adicionarEvento();
         }
     };
 
-    const addEvento = () => {
+    // Adiciona o registro no banco de dados.
+    const adicionarEvento = () => {
         push(ref(db, 'eventos/'), {
             nome: nome,
             data: data,
             local: local,
             investimento: investimento,
             observacoes: observacoes,
-            usuarios: usuarios
+            usuarios: usuarios,
+            status: "Planejado"
         }).then(() => {
-            toast.show({
-                render: () => {
-                    return <Box padding={2} mb={3} rounded="sm" _text={{color: "#fff"}} bg="green.500">O evento foi cadastrado com sucesso!</Box>;
-                }
-            });
-            navigation.navigate("Painel de Controle - AMEM" as never)
+            showToast(toast, "green.500", "O evento foi cadastrado com sucesso!");
+            navigation.navigate("Painel de Controle - AMEM" as never);
         }).catch((error) => {
-            toast.show({
-                render: () => {
-                    return <Box padding={2} mb={3} rounded="sm" _text={{color: "#fff"}} bg="red.500">Erro: {error}.</Box>;
-                }
-            });
+            showToast(toast, "red.500", "Erro: " + error);
         });
     };
 
-    return(
+    // Cria os elementos visuais em tela.
+    return (
         <ScrollView contentContainerStyle={{width:'100%'}}>
             <Box style={styles.boxCentral}>
                 <Box style={styles.box1}>
@@ -216,17 +232,5 @@ const cadastrarEvento = () => {
         </ScrollView>
     );
 };
-
-const styles = StyleSheet.create({
-    boxCentral: {
-        padding: 50
-    },
-    box1: {
-        marginBottom: 50
-    },
-    box2: {
-        marginBottom: 25
-    }
-});
 
 export default cadastrarEvento;

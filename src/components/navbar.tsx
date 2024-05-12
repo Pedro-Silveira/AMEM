@@ -21,7 +21,9 @@ export default function Navbar(){
                         <Divider my="2" w="100%" />
                         <Menu.Item onPress={() => auth.signOut()}>Sair</Menu.Item>
                     </Menu>
-                    <Image height={30} width={75} marginLeft={5} resizeMode={"contain"} source={require("./../media/AMEM.png")} alt="AMEM" />
+                    <Pressable onPress={() => navigation.navigate("Painel de Controle - AMEM" as never)}>
+                        <Image height={30} width={75} marginLeft={5} resizeMode={"contain"} source={require("./../media/AMEM.png")} alt="AMEM" />
+                    </Pressable>
             </Box>
             <Icon as={<MaterialIcons name={"notifications"} />} size={6} color="#bebebe" />
         </Box>

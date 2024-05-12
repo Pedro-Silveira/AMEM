@@ -5,7 +5,7 @@ import { auth, db } from "../services/firebaseConfig";
 import { ref, set } from "firebase/database";
 import { useNavigation } from "@react-navigation/native";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import showToast from "../utils/showToast";
+import showToast from "../util/showToast";
 
 const NovoUsuario = () => {
     const [nome, setNome] = useState('');

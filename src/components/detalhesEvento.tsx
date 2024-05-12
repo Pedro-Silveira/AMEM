@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, FormControl, HStack, Input, ScrollView, Text, TextArea, useToast, VStack, WarningOutlineIcon } from "native-base";
+import { Box, Button, FormControl, HStack, Icon, Input, Pressable, ScrollView, Spacer, Text, TextArea, VStack, WarningOutlineIcon } from "native-base";
 import { StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { onValue, ref } from "firebase/database";
 import { db } from "../services/firebaseConfig";
+import { MaterialIcons } from '@expo/vector-icons';
+import cadastrarEvento from "./CadastrarEvento";
 
 const DetalhesEvento = ({ route }: { route: any }) => {
     const { evento } = route.params;
@@ -13,22 +15,46 @@ const DetalhesEvento = ({ route }: { route: any }) => {
     const [investimento, setInvestimento] = useState(evento.investimento);
     const [observacoes, setObservacoes] = useState(evento.observacoes);
     const [erros, setErros] = useState({});
-    const navigation = useNavigation();
-    const toast = useToast();
-    const [dados, setDados] = useState<any>([]);
+    const navigation = useNavigation<any>();
+    const [dadosDoacoes, setDoacoes] = useState<any>([]);
+    const [dadosVoluntarios, setVoluntarios] = useState<any>([]);
 
     useEffect(() => {
-        const eventoID = evento.id;
-        const eventoRef = ref(db, "eventos/" + evento.id);
+        const queryDoacoes = ref(db, "eventos/" + evento.id + "/doacoes/");
 
-        onValue(eventoRef, (snapshot) => {
-            const eventoData = snapshot.val();
+        onValue(queryDoacoes, (snapshot) => {
+            const dataDoacoes = snapshot.val();
 
-            if (eventoData) {
-                const evento = [{ id: eventoID, ...eventoData }];
-                setDados(evento);
+            if (dataDoacoes) {
+                const novosUsuarios = Object.keys(dataDoacoes)
+                
+                .map(key => ({
+                    id: key,
+                    ...dataDoacoes[key]
+                }));
+                setDoacoes(novosUsuarios);
             } else {
-                setDados([]);
+                setDoacoes([]);
+            }
+        });
+    }, []);
+
+    useEffect(() => {
+        const queryVoluntarios = ref(db, "eventos/" + evento.id + "/voluntarios/");
+
+        onValue(queryVoluntarios, (snapshot) => {
+            const dataVoluntarios = snapshot.val();
+
+            if (dataVoluntarios) {
+                const novosVoluntarios = Object.keys(dataVoluntarios)
+                
+                .map(key => ({
+                    id: key,
+                    ...dataVoluntarios[key]
+                }));
+                setVoluntarios(novosVoluntarios);
+            } else {
+                setVoluntarios([]);
             }
         });
     }, []);
@@ -37,9 +63,16 @@ const DetalhesEvento = ({ route }: { route: any }) => {
         <ScrollView contentContainerStyle={{width:'100%'}}>
             <Box style={styles.boxCentral}>
                 <Box style={styles.box1}>
-                    <Text textAlign={"left"} bold fontSize={"3xl"}>Detalhes do Evento</Text>
+                    <Pressable style={styles.box3} onPress={() => navigation.navigate("Painel de Controle - AMEM")}>
+                        <Icon as={MaterialIcons} name="navigate-before" size={25} color={"#000"} />
+                        <Text textAlign={"left"} bold fontSize={"3xl"}>Detalhes do Evento</Text>
+                    </Pressable>
+                    <Box flexDirection={"row"}>
+                        <Button marginRight={2} leftIcon={<Icon as={MaterialIcons} name="delete" />} size={"sm"} backgroundColor={"#E11D48"} _hover={{backgroundColor: "#BE123C"}}>Excluir</Button>
+                        <Button onPress={cadastrarEvento} leftIcon={<Icon as={MaterialIcons} name="save" />} h={35} size={"sm"} backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}}>Salvar</Button>
+                    </Box>
                 </Box>
-                <Box style={styles.box1}>
+                <Box style={styles.box2}>
                     <FormControl isRequired isInvalid={'nome' in erros}>
                         <FormControl.Label>Nome:</FormControl.Label>
                         <Input value={nome} placeholder="Ex.: Ação de Graças" onChangeText={novoNome => setNome(novoNome)} backgroundColor={"white"} size={"lg"} />
@@ -76,21 +109,67 @@ const DetalhesEvento = ({ route }: { route: any }) => {
                         }
                     </FormControl>
                 </Box>
-                <Box style={styles.box2}>
+                <Box style={styles.box1}>
                     <Text textAlign={"left"} bold fontSize={"xl"}>Doações</Text>
+                    <Button onPress={() => navigation.navigate("Registrar Doação - AMEM", { evento: evento })} leftIcon={<Icon as={MaterialIcons} name="add" />} size={"sm"} backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}}>Registrar Doação</Button>
                 </Box>
-                <Box borderWidth={1} borderColor={"#D4D4D4"} backgroundColor={"#fff"}>
-                    {dados.map((item: any, index: any) => (
-                        <Box key={index} borderBottomWidth={1} borderBottomColor={"#D4D4D4"} py="2" pl="4" pr={5}>
-                            <HStack space={[2, 3]} justifyContent="space-between" alignItems={"center"}>
-                                <VStack>
-                                    <Text bold>
-                                        {item.usuarios}
-                                    </Text>
-                                </VStack>
-                            </HStack>
-                        </Box>
-                    ))}
+                <Box borderWidth={1} borderColor={"#D4D4D4"} backgroundColor={"#fff"} rounded={5} marginBottom={25}>
+                    {dadosDoacoes.length !== 0 ? dadosDoacoes.map((item: any, index: any) => (
+                        <Pressable key={index} onPress={() => navigation.navigate("Detalhes da Doação - AMEM", { evento: evento, doacao: item })}>
+                            {({
+                                isHovered,
+                                isPressed
+                            }) => {
+                                return (
+                                    <Box bg={isPressed || isHovered ? "coolGray.100" : ""} rounded={isPressed || isHovered ? 5 : 0} key={index} borderBottomWidth={1} borderBottomColor={"#D4D4D4"} py="2" pl="4" pr={5}>
+                                        <HStack space={[2, 3]} justifyContent="space-between" alignItems={"center"}>
+                                            <VStack>
+                                                <Text bold>
+                                                    {item.organizacao}
+                                                </Text>
+                                                <Text> 
+                                                    {item.quantidade} {item.unidade} {item.material}.
+                                                </Text>
+                                            </VStack>
+                                            <Spacer />
+                                            {item.tipo == "efetuada" ? <Icon as={<MaterialIcons name={"arrow-circle-right"} />} size={5} color="#E11D48" /> : <Icon as={<MaterialIcons name={"arrow-circle-left"} />} size={5} color="#16A34A" />}
+                                        </HStack>
+                                    </Box>
+                                );
+                            }}
+                        </Pressable>
+                    )) : <Text py="2" px="4">Não há doações.</Text>}
+                </Box>
+                <Box style={styles.box1}>
+                    <Text textAlign={"left"} bold fontSize={"xl"}>Voluntários</Text>
+                    <Button onPress={() => navigation.navigate("Registrar Voluntários - AMEM", { evento: evento })} leftIcon={<Icon as={MaterialIcons} name="add" />} size={"sm"} backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}}>Registrar Voluntários</Button>
+                </Box>
+                <Box borderWidth={1} borderColor={"#D4D4D4"} backgroundColor={"#fff"} rounded={5}>
+                    {dadosVoluntarios.length !== 0 ? dadosVoluntarios.map((item: any, index: any) => (
+                        <Pressable key={index} onPress={() => navigation.navigate("Detalhes do Voluntário - AMEM", { voluntario: item })}>
+                            {({
+                                isHovered,
+                                isPressed
+                            }) => {
+                                return (
+                                    <Box bg={isPressed || isHovered ? "coolGray.100" : ""} rounded={isPressed || isHovered ? 5 : 0} key={index} borderBottomWidth={1} borderBottomColor={"#D4D4D4"} py="2" pl="4" pr={5}>
+                                        <HStack space={[2, 3]} justifyContent="space-between" alignItems={"center"}>
+                                            <VStack>
+                                                <Text bold>
+                                                    {item.nome}
+                                                </Text>
+                                                <Text >
+                                                    {item.horas} hora(s).
+                                                </Text>
+                                            </VStack>
+                                            <Spacer />
+                                            <Icon as={<MaterialIcons name={"timer"} />} size={5} color="#bebebe" />
+                                        </HStack>
+                                    </Box>
+                                );
+                            }}
+                        </Pressable>
+                    )) : <Text py="2" px="4">Não há voluntários.</Text>}
                 </Box>
             </Box>
         </ScrollView>
@@ -102,10 +181,17 @@ const styles = StyleSheet.create({
         padding: 50
     },
     box1: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
         marginBottom: 25
     },
     box2: {
-        marginBottom: 5
+        marginBottom: 25
+    },
+    box3: {
+        flexDirection: "row",
+        alignItems: "center"
     }
 });
 

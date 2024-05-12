@@ -33,23 +33,28 @@ const exibirEventos = () => {
     }, []);
 
     return (
-        <Box borderWidth={1} borderColor={"#D4D4D4"} backgroundColor={"#fff"}>
+        <Box borderWidth={1} borderColor={"#D4D4D4"} backgroundColor={"#fff"} rounded={5}>
             {dados.map((item: any, index: any) => (
                 <Pressable key={index} onPress={() => navigation.navigate("Detalhes do Evento - AMEM", { evento: item })}>
-                    <Box key={index} borderBottomWidth={1} borderBottomColor={"#D4D4D4"} py="2" pl="4" pr={5}>
-                        <HStack space={[2, 3]} justifyContent="space-between" alignItems={"center"}>
-                            <VStack>
-                                <Text bold>
-                                    {item.nome}
-                                </Text>
-                                <Text>
-                                    {calcularDias(item.data)}
-                                </Text>
-                            </VStack>
-                            <Spacer />
-                            <Icon as={<FontAwesome name={"angle-right"} />} size={5} color="#bebebe" />
-                        </HStack>
-                    </Box>
+                    {({
+                        isHovered,
+                        isPressed
+                    }) => {
+                        return <Box bg={isPressed || isHovered ? "coolGray.100" : ""} rounded={isPressed || isHovered ? 5 : 0} key={index} borderBottomWidth={1} borderBottomColor={"#D4D4D4"} py="2" pl="4" pr={5}>
+                            <HStack space={[2, 3]} justifyContent="space-between" alignItems={"center"}>
+                                <VStack>
+                                    <Text bold>
+                                        {item.nome}
+                                    </Text>
+                                    <Text>
+                                        {calcularDias(item.data)}
+                                    </Text>
+                                </VStack>
+                                <Spacer />
+                                <Icon as={<FontAwesome name={"angle-right"} />} size={5} color="#bebebe" />
+                            </HStack>
+                        </Box>
+                    }}
                 </Pressable>
             ))}
         </Box>
@@ -57,18 +62,20 @@ const exibirEventos = () => {
 };
 
 function calcularDias(data: any){
-    var dataEvento = new Date(data).getTime();
+    const [dia, mes, ano] = data.split('/');
+    const dataFormatada = `${mes}/${dia}/${ano}`;
+    var dataEvento = new Date(dataFormatada).getTime();
     var dias = Math.round((dataEvento - new Date().getTime()) / (1000 * 3600 * 24));
-    var dataFormatada = new Intl.DateTimeFormat("pt-BR").format(dataEvento);
 
     if (dias < 30 && dias >= 0) {
-        return dataFormatada + " - Falta(m) " + dias + " dia(s) para o evento!";
+        return new Intl.DateTimeFormat("pt-BR").format(dataEvento) + " - Falta(m) " + dias + " dia(s) para o evento!";
     }
 
-    return dataFormatada;
+    return new Intl.DateTimeFormat("pt-BR").format(dataEvento);
 };
 
-export default function ConsultarEvento(){
+
+export default function painelControle(){
     return(
         <ScrollView contentContainerStyle={{width:'100%'}}>
             <Box padding={50} flex={1}>
