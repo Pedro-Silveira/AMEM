@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, FormControl, HStack, Icon, Input, Pressable, ScrollView, Spacer, Text, TextArea, VStack, WarningOutlineIcon } from "native-base";
+import { AlertDialog, Box, Button, FormControl, HStack, Icon, Input, Pressable, ScrollView, Spacer, Text, TextArea, useToast, VStack, WarningOutlineIcon } from "native-base";
 import { StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { onValue, ref } from "firebase/database";
+import { onValue, ref, remove, update } from "firebase/database";
 import { db } from "../services/firebaseConfig";
 import { MaterialIcons } from '@expo/vector-icons';
-import cadastrarEvento from "./CadastrarEvento";
+import showToast from "../util/showToast";
+import errorTranslate from "../util/errorTranslate";
 
 const DetalhesEvento = ({ route }: { route: any }) => {
     const { evento } = route.params;
@@ -18,6 +19,10 @@ const DetalhesEvento = ({ route }: { route: any }) => {
     const navigation = useNavigation<any>();
     const [dadosDoacoes, setDoacoes] = useState<any>([]);
     const [dadosVoluntarios, setVoluntarios] = useState<any>([]);
+    const toast = useToast();
+    const [isOpen, setIsOpen] = React.useState(false);
+    const onClose = () => setIsOpen(false);
+    const cancelRef = React.useRef(null);
 
     useEffect(() => {
         const queryDoacoes = ref(db, "eventos/" + evento.id + "/doacoes/");
@@ -59,17 +64,115 @@ const DetalhesEvento = ({ route }: { route: any }) => {
         });
     }, []);
 
+    // Remove o registro do banco de dados.
+    const excluirEvento = () => {
+        remove(ref(db, 'eventos/' + evento.id))
+        .then(() => {
+            showToast(toast, "#404040", "O evento foi excluído com sucesso!");
+            navigation.navigate("Painel de Controle - AMEM");
+        })
+        .catch((error) => {
+            showToast(toast, "#E11D48", errorTranslate(error));
+        });
+    };
+
+    // Valida os campos do formulário através de expressões regulares.
+    const validarEvento = () => {
+        const nomeRegex = new RegExp(/^[^\s].*$/);
+        const dataRegex = new RegExp(/^\d{2}\/\d{2}\/\d{4}$/);
+        const investimentoRegex = new RegExp(/^(?:0|[1-9]\d{0,2}(?:\.\d{3})*(?:,\d{1,2})?|,\d{1,2})$/);
+        let erros = 0;
+
+        setErros({});
+
+        if (!nomeRegex.test(nome)){
+            setErros(errosAnteriores => ({
+                ...errosAnteriores,
+                nome: 'O nome inserido é inválido.',
+            }));
+
+            erros++;
+        }
+
+        if (!dataRegex.test(data)){
+            setErros(errosAnteriores => ({
+                ...errosAnteriores,
+                data: 'A data precisa seguir o formato dd/mm/aaaa.',
+            }));
+
+            erros++;
+        }
+
+        if (!nomeRegex.test(local)){
+            setErros(errosAnteriores => ({
+                ...errosAnteriores,
+                local: 'O nome do local inserido é inválido.',
+            }));
+
+            erros++;
+        }
+
+        if (!investimentoRegex.test(investimento)){
+            setErros(errosAnteriores => ({
+                ...errosAnteriores,
+                investimento: 'O valor precisa seguir o padrão do real brasileiro, assim como 1.234,56.',
+            }));
+
+            erros++;
+        }
+
+        if ( erros == 0 ) {
+            editarEvento();
+        }
+    };
+
+    // Adiciona o registro no banco de dados.
+    const editarEvento = () => {
+        update(ref(db, 'eventos/' + evento.id), {
+            nome: nome,
+            data: data,
+            local: local,
+            investimento: investimento,
+            observacoes: observacoes,
+            status: "Planejado"
+        }).then(() => {
+            showToast(toast, "#404040", "O evento foi editado com sucesso!");
+            navigation.navigate("Painel de Controle - AMEM" as never);
+        }).catch((error) => {
+            showToast(toast, "#E11D48", errorTranslate(error));
+        });
+    };
+
     return(
         <ScrollView contentContainerStyle={{width:'100%'}}>
             <Box style={styles.boxCentral}>
                 <Box style={styles.box1}>
                     <Pressable style={styles.box3} onPress={() => navigation.navigate("Painel de Controle - AMEM")}>
-                        <Icon as={MaterialIcons} name="navigate-before" size={25} color={"#000"} />
+                        <Icon as={MaterialIcons} name="navigate-before" size={25} color={"#818181"} />
                         <Text textAlign={"left"} bold fontSize={"3xl"}>Detalhes do Evento</Text>
                     </Pressable>
                     <Box flexDirection={"row"}>
-                        <Button marginRight={2} leftIcon={<Icon as={MaterialIcons} name="delete" />} size={"sm"} backgroundColor={"#E11D48"} _hover={{backgroundColor: "#BE123C"}}>Excluir</Button>
-                        <Button onPress={cadastrarEvento} leftIcon={<Icon as={MaterialIcons} name="save" />} h={35} size={"sm"} backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}}>Salvar</Button>
+                        <Button onPress={() => setIsOpen(!isOpen)} marginRight={2} leftIcon={<Icon as={MaterialIcons} name="delete" />} size={"sm"} backgroundColor={"#E11D48"} _hover={{backgroundColor: "#BE123C"}}>Excluir</Button>
+                        <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
+                            <AlertDialog.Content>
+                            <AlertDialog.CloseButton />
+                            <AlertDialog.Header>Excluir Evento</AlertDialog.Header>
+                            <AlertDialog.Body>
+                                Você tem certeza que deseja excluir o evento? Esta ação não poderá ser revertida.
+                            </AlertDialog.Body>
+                            <AlertDialog.Footer>
+                                <Button.Group space={2}>
+                                <Button variant="unstyled" colorScheme="coolGray" onPress={onClose} ref={cancelRef}>
+                                    Cancelar
+                                </Button>
+                                <Button colorScheme="danger" onPress={excluirEvento}>
+                                    Excluir
+                                </Button>
+                                </Button.Group>
+                            </AlertDialog.Footer>
+                            </AlertDialog.Content>
+                        </AlertDialog>
+                        <Button onPress={validarEvento} leftIcon={<Icon as={MaterialIcons} name="save" />} h={35} size={"sm"} backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}}>Salvar</Button>
                     </Box>
                 </Box>
                 <Box style={styles.box2}>
@@ -142,11 +245,11 @@ const DetalhesEvento = ({ route }: { route: any }) => {
                 </Box>
                 <Box style={styles.box1}>
                     <Text textAlign={"left"} bold fontSize={"xl"}>Voluntários</Text>
-                    <Button onPress={() => navigation.navigate("Registrar Voluntários - AMEM", { evento: evento })} leftIcon={<Icon as={MaterialIcons} name="add" />} size={"sm"} backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}}>Registrar Voluntários</Button>
+                    <Button onPress={() => navigation.navigate("Registrar Voluntário - AMEM", { evento: evento })} leftIcon={<Icon as={MaterialIcons} name="add" />} size={"sm"} backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}}>Registrar Voluntário</Button>
                 </Box>
                 <Box borderWidth={1} borderColor={"#D4D4D4"} backgroundColor={"#fff"} rounded={5}>
                     {dadosVoluntarios.length !== 0 ? dadosVoluntarios.map((item: any, index: any) => (
-                        <Pressable key={index} onPress={() => navigation.navigate("Detalhes do Voluntário - AMEM", { voluntario: item })}>
+                        <Pressable key={index} onPress={() => navigation.navigate("Detalhes do Voluntário - AMEM", { evento: evento, voluntario: item })}>
                             {({
                                 isHovered,
                                 isPressed

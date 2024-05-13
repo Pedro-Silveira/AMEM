@@ -1,20 +1,23 @@
 import React, { useState } from "react";
 import { StyleSheet } from "react-native";
-import { Box, Button, CheckIcon, FormControl, Input, ScrollView, Select, Text, useToast, WarningOutlineIcon } from "native-base";
+import { Box, Button, CheckIcon, FormControl, Icon, Input, Pressable, ScrollView, Select, Text, useToast, WarningOutlineIcon } from "native-base";
 import { useNavigation } from "@react-navigation/native";
 import { db } from "../services/firebaseConfig";
 import { ref, push } from "firebase/database";
+import { MaterialIcons } from '@expo/vector-icons';
 import showToast from "../util/showToast";
+import errorTranslate from "../util/errorTranslate";
 
 const styles = StyleSheet.create({
     boxCentral: {
         padding: 50
     },
     box1: {
-        marginBottom: 50
+        marginBottom: 25
     },
     box2: {
-        marginBottom: 25
+        flexDirection: "row",
+        alignItems: "center"
     }
 });
 
@@ -106,10 +109,10 @@ const registrarDoacao = ({ route }: { route: any }) => {
             quantidade: quantidade,
             unidade: unidade
         }).then(() => {
-            showToast(toast, "green.700", "A doação foi registrada com sucesso!");
+            showToast(toast, "#404040", "A doação foi registrada com sucesso!");
             navigation.navigate("Detalhes do Evento - AMEM", { evento: evento });
         }).catch((error) => {
-            showToast(toast, "red.700", "Erro: " + error);
+            showToast(toast, "#E11D48", errorTranslate(error));
         });
     };
 
@@ -118,10 +121,13 @@ const registrarDoacao = ({ route }: { route: any }) => {
         <ScrollView contentContainerStyle={{width:'100%'}}>
             <Box style={styles.boxCentral}>
                 <Box style={styles.box1}>
-                    <Text textAlign={"center"} bold fontSize={"3xl"}>Registrar Doação</Text>
-                    <Text textAlign={"center"} fontSize={"xl"}>Por gentileza, preencha os campos abaixo para registrar uma nova doação em {evento.nome}.</Text>
+                    <Pressable style={styles.box2} onPress={() => navigation.navigate("Detalhes do Evento - AMEM", { evento: evento })}>
+                        <Icon as={MaterialIcons} name="navigate-before" size={25} color={"#818181"} />
+                        <Text textAlign={"left"} bold fontSize={"3xl"}>Registrar Doação</Text>
+                    </Pressable>
+                    <Text textAlign={"left"} fontSize={"lg"}>Preencha os campos abaixo para registrar uma nova doação em {evento.nome}.</Text>
                 </Box>
-                <Box style={styles.box2}>
+                <Box style={styles.box1}>
                     <FormControl isRequired isInvalid={'tipo' in erros}>
                         <FormControl.Label>Tipo:</FormControl.Label>
                         <Select selectedValue={tipo} onValueChange={novoTipo => setTipo(novoTipo)} placeholder="Escolha um tipo..." _selectedItem={{bg: "teal.600", endIcon: <CheckIcon size={1} />}} backgroundColor={"white"} size={"lg"}>
@@ -145,7 +151,7 @@ const registrarDoacao = ({ route }: { route: any }) => {
                         <Input value={quantidade} placeholder="Ex.: 25" onChangeText={novaQuantidade => setQuantidade(novaQuantidade)} backgroundColor={"white"} size={"lg"}/>
                         {'quantidade' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.quantidade}</FormControl.ErrorMessage> : ''}
                     </FormControl>
-                    <FormControl isInvalid={'unidade' in erros}>
+                    <FormControl isRequired isInvalid={'unidade' in erros}>
                         <FormControl.Label>Unidade de Medida:</FormControl.Label>
                         <Select selectedValue={unidade} onValueChange={novaUnidade => setUnidade(novaUnidade)} placeholder="Escolha uma unidade de medida..." _selectedItem={{bg: "teal.600", endIcon: <CheckIcon size={1} />}} backgroundColor={"white"} size={"lg"}>
                             <Select.Item label="Caixa" value="cx." />
@@ -164,7 +170,7 @@ const registrarDoacao = ({ route }: { route: any }) => {
                 </Box>
                 <Box flexDirection={"row"}>
                     <Button size={"lg"} backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}} flex={1} marginRight={1} onPress={validarDoacao}>Registrar</Button>
-                    <Button size={"lg"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} flex={1} marginRight={1} onPress={limpar}>Limpar</Button>
+                    <Button size={"lg"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} flex={1} marginLeft={1} onPress={limpar}>Limpar</Button>
                 </Box>
             </Box>
         </ScrollView>

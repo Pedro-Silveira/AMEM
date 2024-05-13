@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { StyleSheet } from "react-native";
-import { Box, Button, FormControl, Icon, Input, Pressable, ScrollView, Text, useToast, WarningOutlineIcon } from "native-base";
+import { AlertDialog, Box, Button, FormControl, Icon, Input, Pressable, ScrollView, Text, useToast, WarningOutlineIcon } from "native-base";
 import { useNavigation } from "@react-navigation/native";
 import { db } from "../services/firebaseConfig";
-import { ref, push } from "firebase/database";
+import { ref, update, remove } from "firebase/database";
 import { MaterialIcons } from '@expo/vector-icons';
 import showToast from "../util/showToast";
 import testRegex from "../util/testRegex";
@@ -14,34 +14,33 @@ const styles = StyleSheet.create({
         padding: 50
     },
     box1: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
         marginBottom: 25
     },
     box2: {
+        marginBottom: 25
+    },
+    box3: {
         flexDirection: "row",
         alignItems: "center"
     }
 });
 
-const registrarVoluntario = ({ route }: { route: any }) => {
-    const { evento } = route.params;
-    const [nome, setNome] = useState('');
-    const [curso, setCurso] = useState('');
-    const [telefone, setTelefone] = useState('');
-    const [email, setEmail] = useState('');
-    const [horas, setHoras] =  useState('');
+const DetalhesVoluntario = ({ route }: { route: any }) => {
+    const { evento, voluntario } = route.params;
+    const [nome, setNome] = useState(voluntario.nome);
+    const [curso, setCurso] = useState(voluntario.curso);
+    const [telefone, setTelefone] = useState(voluntario.telefone);
+    const [email, setEmail] = useState(voluntario.email);
+    const [horas, setHoras] =  useState(voluntario.horas);
     const [erros, setErros] = useState({});
     const navigation = useNavigation<any>();
     const toast = useToast();
-
-    // Limpa os campos do formulário.
-    const limpar = () => {
-        setNome('');
-        setCurso('');
-        setTelefone('');
-        setEmail('');
-        setHoras('');
-        setErros({});
-    };
+    const [isOpen, setIsOpen] = React.useState(false);
+    const onClose = () => setIsOpen(false);
+    const cancelRef = React.useRef(null);
 
     // Valida os campos do formulário através de expressões regulares.
     const validarVoluntario = () => {
@@ -95,20 +94,32 @@ const registrarVoluntario = ({ route }: { route: any }) => {
         }
 
         if ( erros == 0 ) {
-            adicionarVoluntario();
+            editarVoluntario();
         }
     };
 
+    // Remove o registro do banco de dados.
+    const excluirVoluntario = () => {
+        remove(ref(db, 'eventos/' + evento.id + '/voluntarios/' + voluntario.id))
+        .then(() => {
+            showToast(toast, "#404040", "O voluntário foi excluído com sucesso!");
+            navigation.navigate("Detalhes do Evento - AMEM", { evento: evento });
+        })
+        .catch((error) => {
+            showToast(toast, "#E11D48", errorTranslate(error));
+        });
+    };
+
     // Adiciona o registro no banco de dados.
-    const adicionarVoluntario = () => {
-        push(ref(db, 'eventos/' + evento.id + '/voluntarios/'), {
+    const editarVoluntario = () => {
+        update(ref(db, 'eventos/' + evento.id + '/voluntarios/' + voluntario.id), {
             nome: nome,
             curso: curso,
             telefone: telefone,
             email: email,
             horas: horas
         }).then(() => {
-            showToast(toast, "#404040", "O voluntário foi registrado com sucesso!");
+            showToast(toast, "#404040", "O voluntário foi editado com sucesso!");
             navigation.navigate("Detalhes do Evento - AMEM", { evento: evento });
         }).catch((error) => {
             showToast(toast, "#E11D48", errorTranslate(error));
@@ -120,13 +131,35 @@ const registrarVoluntario = ({ route }: { route: any }) => {
         <ScrollView contentContainerStyle={{width:'100%'}}>
             <Box style={styles.boxCentral}>
                 <Box style={styles.box1}>
-                    <Pressable style={styles.box2} onPress={() => navigation.navigate("Detalhes do Evento - AMEM", { evento: evento })}>
+                    <Pressable style={styles.box3} onPress={() => navigation.navigate("Detalhes do Evento - AMEM", { evento: evento })}>
                         <Icon as={MaterialIcons} name="navigate-before" size={25} color={"#818181"} />
-                        <Text textAlign={"left"} bold fontSize={"3xl"}>Registrar Voluntário</Text>
+                        <Text bold fontSize={"3xl"}>Detalhes do Voluntário</Text>
                     </Pressable>
-                    <Text textAlign={"left"} fontSize={"lg"}>Preencha os campos abaixo para registrar um novo voluntário em {evento.nome}.</Text>
+                    <Box flexDirection={"row"}>
+                        <Button onPress={() => setIsOpen(!isOpen)} marginRight={2} leftIcon={<Icon as={MaterialIcons} name="delete" />} size={"sm"} backgroundColor={"#E11D48"} _hover={{backgroundColor: "#BE123C"}}>Excluir</Button>
+                        <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
+                            <AlertDialog.Content>
+                            <AlertDialog.CloseButton />
+                            <AlertDialog.Header>Excluir Voluntário</AlertDialog.Header>
+                            <AlertDialog.Body>
+                                Você tem certeza que deseja excluir o voluntário? Esta ação não poderá ser revertida.
+                            </AlertDialog.Body>
+                            <AlertDialog.Footer>
+                                <Button.Group space={2}>
+                                <Button variant="unstyled" colorScheme="coolGray" onPress={onClose} ref={cancelRef}>
+                                    Cancelar
+                                </Button>
+                                <Button colorScheme="danger" onPress={excluirVoluntario}>
+                                    Excluir
+                                </Button>
+                                </Button.Group>
+                            </AlertDialog.Footer>
+                            </AlertDialog.Content>
+                        </AlertDialog>
+                        <Button onPress={validarVoluntario} leftIcon={<Icon as={MaterialIcons} name="save" />} h={35} size={"sm"} backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}}>Salvar</Button>
+                    </Box>
                 </Box>
-                <Box style={styles.box1}>
+                <Box style={styles.box2}>
                     <FormControl isRequired isInvalid={'nome' in erros}>
                         <FormControl.Label>Nome Completo:</FormControl.Label>
                         <Input value={nome} placeholder="Ex.: João Vithor" onChangeText={novoNome => setNome(novoNome)} backgroundColor={"white"} size={"lg"}/>
@@ -153,13 +186,9 @@ const registrarVoluntario = ({ route }: { route: any }) => {
                         {'horas' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.horas}</FormControl.ErrorMessage> : ''}
                     </FormControl>
                 </Box>
-                <Box flexDirection={"row"}>
-                    <Button size={"lg"} backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}} flex={1} marginRight={1} onPress={validarVoluntario}>Registrar</Button>
-                    <Button size={"lg"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} flex={1} marginLeft={1} onPress={limpar}>Limpar</Button>
-                </Box>
             </Box>
         </ScrollView>
     );
 };
 
-export default registrarVoluntario;
+export default DetalhesVoluntario;

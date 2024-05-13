@@ -7,13 +7,14 @@ import Navbar from "./src/components/navbar";
 import Footer from "./src/components/footer";
 import CadastrarEvento from "./src/components/CadastrarEvento";
 import PainelControle from "./src/components/PainelControle";
-import Login from "./src/components/login";
+import Login from "./src/components/Login";
 import { auth } from "./src/services/firebaseConfig";
 import NovoUsuario from "./src/components/NovoUsuario";
 import DetalhesEvento from "./src/components/DetalhesEvento";
 import RegistrarDoacao from "./src/components/RegistrarDoacao";
 import RegistrarVoluntario from "./src/components/RegistrarVoluntario";
 import DetalhesDoacao from "./src/components/DetalhesDoacao";
+import DetalhesVoluntario from "./src/components/DetalhesVoluntario";
 
 const Stack = createNativeStackNavigator();
 const InsideStack = createNativeStackNavigator();
@@ -28,8 +29,9 @@ function InsideLayout(){
         <InsideStack.Screen name="Novo Usuário - AMEM" component={NovoUsuario} />
         <InsideStack.Screen name="Detalhes do Evento - AMEM" component={DetalhesEvento} />
         <InsideStack.Screen name="Registrar Doação - AMEM" component={RegistrarDoacao} />
-        <InsideStack.Screen name="Registrar Voluntários - AMEM" component={RegistrarVoluntario} />
+        <InsideStack.Screen name="Registrar Voluntário - AMEM" component={RegistrarVoluntario} />
         <InsideStack.Screen name="Detalhes da Doação - AMEM" component={DetalhesDoacao} />
+        <InsideStack.Screen name="Detalhes do Voluntário - AMEM" component={DetalhesVoluntario} />
       </InsideStack.Navigator>
       <Footer />
     </>

@@ -3,9 +3,10 @@ import { StyleSheet } from "react-native";
 import { AlertDialog, Box, Button, CheckIcon, FormControl, Icon, Input, Pressable, ScrollView, Select, Text, useToast, WarningOutlineIcon } from "native-base";
 import { useNavigation } from "@react-navigation/native";
 import { db } from "../services/firebaseConfig";
-import { ref, remove, set } from "firebase/database";
+import { ref, remove, update } from "firebase/database";
 import { MaterialIcons } from '@expo/vector-icons';
 import showToast from "../util/showToast";
+import errorTranslate from "../util/errorTranslate";
 
 const styles = StyleSheet.create({
     boxCentral: {
@@ -94,7 +95,7 @@ const detalhesDoacao = ({ route }: { route: any }) => {
         }
 
         if ( erros == 0 ) {
-            adicionarDoacao();
+            editarDoacao();
         }
     };
 
@@ -102,27 +103,27 @@ const detalhesDoacao = ({ route }: { route: any }) => {
     const excluirDoacao = () => {
         remove(ref(db, 'eventos/' + evento.id + '/doacoes/' + doacao.id))
         .then(() => {
-            showToast(toast, "green.700", "A doação foi excluída com sucesso!");
+            showToast(toast, "#404040", "A doação foi excluída com sucesso!");
             navigation.navigate("Detalhes do Evento - AMEM", { evento: evento });
         })
         .catch((error) => {
-            showToast(toast, "red.700", "Erro: " + error);
+            showToast(toast, "#E11D48", errorTranslate(error));
         });
     };
 
     // Adiciona o registro no banco de dados.
-    const adicionarDoacao = () => {
-        set(ref(db, 'eventos/' + evento.id + '/doacoes/' + doacao.id), {
+    const editarDoacao = () => {
+        update(ref(db, 'eventos/' + evento.id + '/doacoes/' + doacao.id), {
             tipo: tipo,
             organizacao: organizacao,
             material: material,
             quantidade: quantidade,
             unidade: unidade
         }).then(() => {
-            showToast(toast, "green.700", "A doação foi editada com sucesso!");
+            showToast(toast, "#404040", "A doação foi editada com sucesso!");
             navigation.navigate("Detalhes do Evento - AMEM", { evento: evento });
         }).catch((error) => {
-            showToast(toast, "red.700", "Erro: " + error);
+            showToast(toast, "#E11D48", errorTranslate(error));
         });
     };
 
@@ -132,7 +133,7 @@ const detalhesDoacao = ({ route }: { route: any }) => {
             <Box style={styles.boxCentral}>
                 <Box style={styles.box1}>
                     <Pressable style={styles.box3} onPress={() => navigation.navigate("Detalhes do Evento - AMEM", { evento: evento })}>
-                        <Icon as={MaterialIcons} name="navigate-before" size={25} color={"#000"} />
+                        <Icon as={MaterialIcons} name="navigate-before" size={25} color={"#818181"} />
                         <Text bold fontSize={"3xl"}>Detalhes da Doação</Text>
                     </Pressable>
                     <Box flexDirection={"row"}>

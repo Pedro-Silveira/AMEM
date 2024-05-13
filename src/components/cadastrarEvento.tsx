@@ -1,20 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet } from "react-native";
-import { Box, Button, Checkbox, FormControl, HStack, Input, ScrollView, Spacer, Text, TextArea, useToast, VStack, WarningOutlineIcon } from "native-base";
+import { Box, Button, Checkbox, FormControl, HStack, Icon, Input, Pressable, ScrollView, Spacer, Text, TextArea, useToast, VStack, WarningOutlineIcon } from "native-base";
 import { useNavigation } from "@react-navigation/native";
 import { db } from "../services/firebaseConfig";
 import { ref, push, onValue } from "firebase/database";
 import showToast from "../util/showToast";
+import { MaterialIcons } from '@expo/vector-icons';
+import errorTranslate from "../util/errorTranslate";
 
 const styles = StyleSheet.create({
     boxCentral: {
         padding: 50
     },
     box1: {
-        marginBottom: 50
+        marginBottom: 25
     },
     box2: {
-        marginBottom: 25
+        flexDirection: "row",
+        alignItems: "center"
     }
 });
 
@@ -165,13 +168,12 @@ const cadastrarEvento = () => {
             local: local,
             investimento: investimento,
             observacoes: observacoes,
-            usuarios: usuarios,
             status: "Planejado"
         }).then(() => {
-            showToast(toast, "green.500", "O evento foi cadastrado com sucesso!");
+            showToast(toast, "#404040", "O evento foi cadastrado com sucesso!");
             navigation.navigate("Painel de Controle - AMEM" as never);
         }).catch((error) => {
-            showToast(toast, "red.500", "Erro: " + error);
+            showToast(toast, "#E11D48", errorTranslate(error));
         });
     };
 
@@ -180,10 +182,13 @@ const cadastrarEvento = () => {
         <ScrollView contentContainerStyle={{width:'100%'}}>
             <Box style={styles.boxCentral}>
                 <Box style={styles.box1}>
-                    <Text textAlign={"center"} bold fontSize={"3xl"}>Cadastrar Evento</Text>
-                    <Text textAlign={"center"} fontSize={"xl"}>Por gentileza, preencha os campos abaixo para cadastrar um novo evento.</Text>
+                    <Pressable style={styles.box2} onPress={() => navigation.navigate("Painel de Controle - AMEM" as never)}>
+                        <Icon as={MaterialIcons} name="navigate-before" size={25} color={"#818181"} />
+                        <Text textAlign={"left"} bold fontSize={"3xl"}>Cadastrar Evento</Text>
+                    </Pressable>
+                    <Text textAlign={"left"} fontSize={"lg"}>Preencha os campos abaixo para cadastrar um novo evento.</Text>
                 </Box>
-                <Box style={styles.box2}>
+                <Box style={styles.box1}>
                     <FormControl isRequired isInvalid={'nome' in erros}>
                         <FormControl.Label>Nome:</FormControl.Label>
                         <Input value={nome} placeholder="Ex.: Ação de Graças" onChangeText={novoNome => setNome(novoNome)} backgroundColor={"white"} size={"lg"} />
@@ -220,13 +225,13 @@ const cadastrarEvento = () => {
                         }
                     </FormControl>
                     <FormControl isInvalid={'usuarios' in erros}>
-                        <FormControl.Label>Usuários Envolvidos:</FormControl.Label>
+                        <FormControl.Label>Encaminhar para:</FormControl.Label>
                         {buscarUsuarios()}
                     </FormControl>
                 </Box>
                 <Box flexDirection={"row"}>
                     <Button size={"lg"} backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}} flex={1} marginRight={1} onPress={validarEvento}>Cadastrar</Button>
-                    <Button size={"lg"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} flex={1} marginRight={1} onPress={limpar}>Limpar</Button>
+                    <Button size={"lg"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} flex={1} marginLeft={1} onPress={limpar}>Limpar</Button>
                 </Box>
             </Box>
         </ScrollView>

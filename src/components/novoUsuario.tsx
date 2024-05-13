@@ -6,6 +6,7 @@ import { ref, set } from "firebase/database";
 import { useNavigation } from "@react-navigation/native";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import showToast from "../util/showToast";
+import errorTranslate from "../util/errorTranslate";
 
 const NovoUsuario = () => {
     const [nome, setNome] = useState('');
@@ -97,18 +98,18 @@ const NovoUsuario = () => {
                         email: email,
                         permissao: permissao
                     }).then(() => {
-                        showToast(toast, "green.500", "O usuário foi cadastrado com sucesso!");
+                        showToast(toast, "#404040", "O usuário foi cadastrado com sucesso!");
                         navigation.navigate("Painel de Controle - AMEM" as never);
                     }).catch((error) => {
-                        showToast(toast, "red.500", "Erro: " + error);
+                        showToast(toast, "#E11D48", errorTranslate(error));
                     });
                 }).catch((error) => {
-                    showToast(toast, "red.500", "Erro: " + error);
+                    showToast(toast, "#E11D48", errorTranslate(error));
                 });
             }
         })
         .catch((error) => {
-            showToast(toast, "red.500", "Erro: " + error);
+            showToast(toast, "#E11D48", errorTranslate(error));
         });
     };
 
@@ -154,7 +155,7 @@ const NovoUsuario = () => {
                         <Select selectedValue={permissao} onValueChange={novaPermissao => setPermissao(novaPermissao)} placeholder="Escolha uma permissão..." _selectedItem={{bg: "teal.600", endIcon: <CheckIcon size={1} />}} backgroundColor={"white"} size={"lg"}>
                             <Select.Item label="Usuário" value="usuario" />
                             <Select.Item label="Editor" value="editor" />
-                            <Select.Item label="Administrador" value="administrator" />
+                            <Select.Item label="Administrador" value="administrador" />
                         </Select>
                         {'permissao' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.permissao}</FormControl.ErrorMessage> : ''
