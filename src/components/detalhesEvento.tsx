@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { AlertDialog, Box, Button, FormControl, HStack, Icon, Input, Pressable, ScrollView, Spacer, Text, TextArea, useToast, VStack, WarningOutlineIcon } from "native-base";
+import { AlertDialog, Box, Button, FormControl, HStack, Icon, Input, Pressable, ScrollView, Spacer, Text, TextArea, Tooltip, useToast, VStack, WarningOutlineIcon } from "native-base";
 import { StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { onValue, ref, remove, update } from "firebase/database";
@@ -143,6 +143,18 @@ const DetalhesEvento = ({ route }: { route: any }) => {
         });
     };
 
+    // Muda o status do evento no banco de dados.
+    const encerrarEvento = () => {
+        update(ref(db, 'eventos/' + evento.id), {
+            status: "Encerrado"
+        }).then(() => {
+            showToast(toast, "#404040", "O evento foi encerrado com sucesso!");
+            navigation.navigate("Painel de Controle - AMEM" as never);
+        }).catch((error) => {
+            showToast(toast, "#E11D48", errorTranslate(error));
+        });
+    };
+
     return(
         <ScrollView contentContainerStyle={{width:'100%'}}>
             <Box style={styles.boxCentral}>
@@ -152,7 +164,9 @@ const DetalhesEvento = ({ route }: { route: any }) => {
                         <Text textAlign={"left"} bold fontSize={"3xl"}>Detalhes do Evento</Text>
                     </Pressable>
                     <Box flexDirection={"row"}>
-                        <Button onPress={() => setIsOpen(!isOpen)} marginRight={2} leftIcon={<Icon as={MaterialIcons} name="delete" />} size={"sm"} backgroundColor={"#E11D48"} _hover={{backgroundColor: "#BE123C"}}>Excluir</Button>
+                        <Tooltip label="Excluir" openDelay={500}>
+                            <Button onPress={() => setIsOpen(!isOpen)} marginRight={2} leftIcon={<Icon as={MaterialIcons} name="delete" />} size={"sm"} backgroundColor={"#E11D48"} _hover={{backgroundColor: "#BE123C"}} />
+                        </Tooltip>
                         <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
                             <AlertDialog.Content>
                             <AlertDialog.CloseButton />
@@ -172,7 +186,12 @@ const DetalhesEvento = ({ route }: { route: any }) => {
                             </AlertDialog.Footer>
                             </AlertDialog.Content>
                         </AlertDialog>
-                        <Button onPress={validarEvento} leftIcon={<Icon as={MaterialIcons} name="save" />} h={35} size={"sm"} backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}}>Salvar</Button>
+                        <Tooltip label="Salvar" openDelay={500}>
+                            <Button onPress={validarEvento} marginRight={2} leftIcon={<Icon as={MaterialIcons} name="save" />} h={35} size={"sm"} backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}} />
+                        </Tooltip>
+                        <Tooltip label="Encerrar" openDelay={500}>
+                            <Button onPress={encerrarEvento} leftIcon={<Icon as={MaterialIcons} name="done" />} size={"sm"} backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}} />
+                        </Tooltip>
                     </Box>
                 </Box>
                 <Box style={styles.box2}>

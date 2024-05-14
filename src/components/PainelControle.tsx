@@ -23,13 +23,18 @@ const styles = StyleSheet.create({
 const painelControle = () => {
     const navigation = useNavigation<any>();
     const [dados, setDados] = useState<any>([]);
-    const [eventosAndamento, setEventosAndamento] = useState<any>([]);
+    const [doacoes, setDoacoes] = useState<any>([]);
+    const [voluntarios, setVoluntarios] = useState<any>([]);
 
     const exibirEventos = () => {
         useEffect(() => {
             const query = ref(db, "eventos/");
             onValue(query, (snapshot) => {
                 const data = snapshot.val();
+                let totalDoacoes = 0;
+                let totalVoluntarios = 0;
+                let totalEventos = 0;
+
                 if (data) {
                     const novosUsuarios = Object.keys(data)
                     .map(key => ({
@@ -43,7 +48,21 @@ const painelControle = () => {
                         return dataA.getTime() - dataB.getTime();
                     });
 
+                    Object.keys(data).forEach((eventoKey) => {
+                        if (data[eventoKey]?.doacoes) {
+                            totalDoacoes += Object.keys(data[eventoKey].doacoes).length;
+                        }
+
+                        if (data[eventoKey]?.voluntarios) {
+                            totalVoluntarios += Object.keys(data[eventoKey].voluntarios).length;
+                        }
+
+                        totalEventos += 1;
+                    });
+
                     setDados(novosUsuarios);
+                    setDoacoes(totalDoacoes);
+                    setVoluntarios(totalVoluntarios);
                 } else {
                     setDados([]);
                 }
@@ -52,7 +71,7 @@ const painelControle = () => {
 
         return (
             <Box borderWidth={1} borderColor={"#D4D4D4"} backgroundColor={"#fff"} rounded={5}>
-                {dados.map((item: any, index: any) => (
+                {dados.filter((evento: { status: string; }) => evento.status === "Planejado").map((item: any, index: any) => (
                     <Pressable key={index} onPress={() => navigation.navigate("Detalhes do Evento - AMEM", { evento: item })}>
                         {({
                             isHovered,
@@ -91,19 +110,19 @@ const painelControle = () => {
                 <HStack justifyContent="center" mb={25}>
                     <Box flex={1} bg="white" borderWidth={1} borderColor={"#D4D4D4"} rounded={5} alignItems={"center"} py={25} mr={2}>
                         <Text bold fontSize={"3xl"}>{dados.filter((evento: { status: string; }) => evento.status === "Planejado").length}</Text>
-                        <Text textAlign={"center"}>evento(s) <Text color={"amber.500"}>planejado(s)</Text></Text>
+                        <Text textAlign={"center"}>evento(s) <Text bold color={"#1C3D8C"}>planejado(s)</Text></Text>
                     </Box>
                     <Box flex={1} bg="white" borderWidth={1} borderColor={"#D4D4D4"} rounded={5} alignItems={"center"} py={25} mr={1}>
-                        <Text bold fontSize={"3xl"}>{dados.filter((evento: { status: string; }) => evento.status === "Planejado").length}</Text>
-                        <Text textAlign={"center"}>evento(s) <Text color={"amber.500"}>planejado(s)</Text></Text>
+                        <Text bold fontSize={"3xl"}>{dados.filter((evento: { status: string; }) => evento.status === "Encerrado").length}</Text>
+                        <Text textAlign={"center"}>evento(s) <Text bold color={"#16A34A"}>encerrado(s)</Text></Text>
                     </Box>
                     <Box flex={1} bg="white" borderWidth={1} borderColor={"#D4D4D4"} rounded={5} alignItems={"center"} py={25} ml={1}>
-                        <Text bold fontSize={"3xl"}>{dados.filter((evento: { status: string; }) => evento.status === "Planejado").length}</Text>
-                        <Text textAlign={"center"}>evento(s) <Text color={"amber.500"}>planejado(s)</Text></Text>
+                        <Text bold fontSize={"3xl"}>{doacoes}</Text>
+                        <Text textAlign={"center"}>doação(ões)</Text>
                     </Box>
                     <Box flex={1} bg="white" borderWidth={1} borderColor={"#D4D4D4"} rounded={5} alignItems={"center"} py={25} ml={2}>
-                        <Text bold fontSize={"3xl"}>{dados.filter((evento: { status: string; }) => evento.status === "Planejado").length}</Text>
-                        <Text textAlign={"center"}>evento(s) <Text color={"amber.500"}>planejado(s)</Text></Text>
+                        <Text bold fontSize={"3xl"}>{voluntarios}</Text>
+                        <Text textAlign={"center"}>voluntário(s)</Text>
                     </Box>
                 </HStack>
                 {exibirEventos()}
