@@ -1,10 +1,11 @@
-import { Box, Button, HStack, Icon, Pressable, ScrollView, Spacer, Text, VStack } from "native-base";
+import { Box, Button, Center, HStack, Icon, Pressable, ScrollView, Spacer, Text, VStack } from "native-base";
 import React, { useEffect, useState } from "react";
 import { StyleSheet } from "react-native";
 import { db } from "../services/firebaseConfig";
 import { onValue, ref } from "firebase/database";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from "@react-navigation/native";
+import calcularDias from "../util/dateCalculator";
 
 const styles = StyleSheet.create({
     boxCentral: {
@@ -21,23 +22,10 @@ const styles = StyleSheet.create({
 
 const painelControle = () => {
     const navigation = useNavigation<any>();
-
-    const calcularDias = (data: any) => {
-        const [dia, mes, ano] = data.split('/');
-        const dataFormatada = `${mes}/${dia}/${ano}`;
-        var dataEvento = new Date(dataFormatada).getTime();
-        var dias = Math.round((dataEvento - new Date().getTime()) / (1000 * 3600 * 24));
-
-        if (dias < 30 && dias >= 0) {
-            return new Intl.DateTimeFormat("pt-BR").format(dataEvento) + " - Falta(m) " + dias + " dia(s) para o evento!";
-        }
-
-        return new Intl.DateTimeFormat("pt-BR").format(dataEvento);
-    };
+    const [dados, setDados] = useState<any>([]);
+    const [eventosAndamento, setEventosAndamento] = useState<any>([]);
 
     const exibirEventos = () => {
-        const [dados, setDados] = useState<any>([]);
-
         useEffect(() => {
             const query = ref(db, "eventos/");
             onValue(query, (snapshot) => {
@@ -54,6 +42,7 @@ const painelControle = () => {
 
                         return dataA.getTime() - dataB.getTime();
                     });
+
                     setDados(novosUsuarios);
                 } else {
                     setDados([]);
@@ -99,6 +88,24 @@ const painelControle = () => {
                         <Button onPress={() => navigation.navigate("Cadastrar Evento - AMEM")} leftIcon={<Icon as={MaterialIcons} name="add" />} size={"sm"} backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}}>Cadastrar Evento</Button>
                     </Box>
                 </Box>
+                <HStack justifyContent="center" mb={25}>
+                    <Box flex={1} bg="white" borderWidth={1} borderColor={"#D4D4D4"} rounded={5} alignItems={"center"} py={25} mr={2}>
+                        <Text bold fontSize={"3xl"}>{dados.filter((evento: { status: string; }) => evento.status === "Planejado").length}</Text>
+                        <Text textAlign={"center"}>evento(s) <Text color={"amber.500"}>planejado(s)</Text></Text>
+                    </Box>
+                    <Box flex={1} bg="white" borderWidth={1} borderColor={"#D4D4D4"} rounded={5} alignItems={"center"} py={25} mr={1}>
+                        <Text bold fontSize={"3xl"}>{dados.filter((evento: { status: string; }) => evento.status === "Planejado").length}</Text>
+                        <Text textAlign={"center"}>evento(s) <Text color={"amber.500"}>planejado(s)</Text></Text>
+                    </Box>
+                    <Box flex={1} bg="white" borderWidth={1} borderColor={"#D4D4D4"} rounded={5} alignItems={"center"} py={25} ml={1}>
+                        <Text bold fontSize={"3xl"}>{dados.filter((evento: { status: string; }) => evento.status === "Planejado").length}</Text>
+                        <Text textAlign={"center"}>evento(s) <Text color={"amber.500"}>planejado(s)</Text></Text>
+                    </Box>
+                    <Box flex={1} bg="white" borderWidth={1} borderColor={"#D4D4D4"} rounded={5} alignItems={"center"} py={25} ml={2}>
+                        <Text bold fontSize={"3xl"}>{dados.filter((evento: { status: string; }) => evento.status === "Planejado").length}</Text>
+                        <Text textAlign={"center"}>evento(s) <Text color={"amber.500"}>planejado(s)</Text></Text>
+                    </Box>
+                </HStack>
                 {exibirEventos()}
             </Box>
         </ScrollView>

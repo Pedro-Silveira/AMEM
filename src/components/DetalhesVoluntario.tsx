@@ -146,7 +146,7 @@ const DetalhesVoluntario = ({ route }: { route: any }) => {
                             </AlertDialog.Body>
                             <AlertDialog.Footer>
                                 <Button.Group space={2}>
-                                <Button variant="unstyled" colorScheme="coolGray" onPress={onClose} ref={cancelRef}>
+                                <Button variant="ghost" colorScheme="coolGray" onPress={onClose} ref={cancelRef}>
                                     Cancelar
                                 </Button>
                                 <Button colorScheme="danger" onPress={excluirVoluntario}>
