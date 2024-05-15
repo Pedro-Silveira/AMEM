@@ -15,6 +15,8 @@ import RegistrarDoacao from "./src/components/RegistrarDoacao";
 import RegistrarVoluntario from "./src/components/RegistrarVoluntario";
 import DetalhesDoacao from "./src/components/DetalhesDoacao";
 import DetalhesVoluntario from "./src/components/DetalhesVoluntario";
+import ListaDoacoes from "./src/components/ListaDoacoes";
+import ListaVoluntarios from "./src/components/ListaVoluntarios";
 
 const Stack = createNativeStackNavigator();
 const InsideStack = createNativeStackNavigator();
@@ -32,6 +34,8 @@ function InsideLayout(){
         <InsideStack.Screen name="Registrar Voluntário - AMEM" component={RegistrarVoluntario} />
         <InsideStack.Screen name="Detalhes da Doação - AMEM" component={DetalhesDoacao} />
         <InsideStack.Screen name="Detalhes do Voluntário - AMEM" component={DetalhesVoluntario} />
+        <InsideStack.Screen name="Lista de Doações - AMEM" component={ListaDoacoes} />
+        <InsideStack.Screen name="Lista de Voluntários - AMEM" component={ListaVoluntarios} />
       </InsideStack.Navigator>
       <Footer />
     </>
@@ -43,7 +47,6 @@ export default function App() {
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
-      console.log('user', user);
       setUser(user);
     });
   }, []);
