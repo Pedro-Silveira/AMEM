@@ -6,7 +6,7 @@ import { onAuthStateChanged, User } from "firebase/auth";
 import Navbar from "./src/components/Navbar";
 import Footer from "./src/components/Footer";
 import CadastrarEvento from "./src/components/CadastrarEvento";
-import PainelControle from "./src/components/PainelControle";
+import ControleEventos from "./src/components/ControleEventos";
 import Login from "./src/components/Login";
 import { auth } from "./src/services/firebaseConfig";
 import NovoUsuario from "./src/components/NovoUsuario";
@@ -26,7 +26,7 @@ function InsideLayout(){
     <>
       <Navbar />
       <InsideStack.Navigator screenOptions={{headerShown: false}}>
-        <InsideStack.Screen name="Painel de Controle - AMEM" component={PainelControle} />
+        <InsideStack.Screen name="Controle de Eventos - AMEM" component={ControleEventos} />
         <InsideStack.Screen name="Cadastrar Evento - AMEM" component={CadastrarEvento} />
         <InsideStack.Screen name="Novo Usuário - AMEM" component={NovoUsuario} />
         <InsideStack.Screen name="Detalhes do Evento - AMEM" component={DetalhesEvento} />

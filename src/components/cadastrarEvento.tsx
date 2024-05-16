@@ -171,7 +171,7 @@ const cadastrarEvento = () => {
             status: "Planejado"
         }).then(() => {
             showToast(toast, "#404040", "O evento foi cadastrado com sucesso!");
-            navigation.navigate("Painel de Controle - AMEM" as never);
+            navigation.navigate("Controle de Eventos - AMEM" as never);
         }).catch((error) => {
             showToast(toast, "#E11D48", errorTranslate(error));
         });
@@ -182,7 +182,7 @@ const cadastrarEvento = () => {
         <ScrollView contentContainerStyle={{width:'100%'}}>
             <Box style={styles.boxCentral}>
                 <Box style={styles.box1}>
-                    <Pressable style={styles.box2} onPress={() => navigation.navigate("Painel de Controle - AMEM" as never)}>
+                    <Pressable style={styles.box2} onPress={() => navigation.navigate("Controle de Eventos - AMEM" as never)}>
                         <Icon as={MaterialIcons} name="navigate-before" size={25} color={"#818181"} />
                         <Text textAlign={"left"} bold fontSize={"3xl"}>Cadastrar Evento</Text>
                     </Pressable>

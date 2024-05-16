@@ -43,7 +43,7 @@ const ListaVoluntarios = () => {
         <ScrollView contentContainerStyle={{width:'100%'}}>
             <Box style={styles.boxCentral}>
                 <Box style={styles.box1}>
-                    <Pressable style={styles.box3} onPress={() => navigation.navigate("Painel de Controle - AMEM")}>
+                    <Pressable style={styles.box3} onPress={() => navigation.navigate("Controle de Eventos - AMEM")}>
                         <Icon as={MaterialIcons} name="navigate-before" size={25} color={"#818181"} />
                         <Text textAlign={"left"} bold fontSize={"3xl"}>Lista de Voluntários</Text>
                     </Pressable>

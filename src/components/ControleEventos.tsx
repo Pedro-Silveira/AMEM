@@ -1,4 +1,4 @@
-import { Box, Button, HStack, Icon, Pressable, ScrollView, Spacer, Text, VStack } from "native-base";
+import { Box, Button, HStack, Icon, Input, Pressable, ScrollView, Select, Spacer, Text, VStack } from "native-base";
 import React, { useEffect, useState } from "react";
 import { StyleSheet } from "react-native";
 import { db } from "../services/firebaseConfig";
@@ -20,12 +20,15 @@ const styles = StyleSheet.create({
     }
 });
 
-const painelControle = () => {
+const controleEventos = () => {
     const navigation = useNavigation<any>();
     const [dados, setDados] = useState<any>([]);
     const [doacoes, setDoacoes] = useState<any>([0]);
     const [voluntarios, setVoluntarios] = useState<any>([0]);
+    const [filtroNome, setFiltroNome] = useState("");
     const [filtroStatus, setFiltroStatus] = useState("Planejado");
+    const [filtroDataInicial, setFiltroDataInicial] = useState("");
+    const [filtroDataFinal, setFiltroDataFinal] = useState("");
 
     const exibirEventos = () => {
         useEffect(() => {
@@ -43,8 +46,10 @@ const painelControle = () => {
                         ...data[key]
                     }))
                     .sort((a, b) => {
-                        const dataA = new Date(a.data);
-                        const dataB = new Date(b.data);
+                        const [dia, mes, ano] = a.data.split('/');
+                        const [dia2, mes2, ano2] = b.data.split('/');
+                        const dataA = new Date(`${mes}/${dia}/${ano}`);
+                        const dataB = new Date(`${mes2}/${dia2}/${ano2}`);
 
                         return dataA.getTime() - dataB.getTime();
                     });
@@ -68,7 +73,7 @@ const painelControle = () => {
                     setDados([]);
                 }
             });
-        }, []);
+        }, [filtroNome, filtroStatus, filtroDataInicial, filtroDataFinal]);
 
         return (
             <Box borderWidth={1} borderColor={"#D4D4D4"} backgroundColor={"#fff"} rounded={5}>
@@ -103,7 +108,7 @@ const painelControle = () => {
         <ScrollView contentContainerStyle={{width:'100%'}}>
             <Box style={styles.boxCentral}>
                 <Box style={styles.box1}>
-                    <Text textAlign={"left"} bold fontSize={"3xl"}>Painel de Controle</Text>
+                    <Text textAlign={"left"} bold fontSize={"3xl"}>Controle de Eventos</Text>
                     <Box flexDirection={"row"}>
                         <Button onPress={() => navigation.navigate("Cadastrar Evento - AMEM")} leftIcon={<Icon as={MaterialIcons} name="add" />} size={"sm"} backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}}>Cadastrar Evento</Button>
                     </Box>
@@ -162,10 +167,45 @@ const painelControle = () => {
                         }}
                     </Pressable>
                 </HStack>
+                <Input
+                        value={filtroNome}
+                        onChangeText={(text) => setFiltroNome(text)}
+                        placeholder="Filtrar por nome"
+                        size="md"
+                        w={200}
+                        mr={2}
+                    />
+                    <Select
+                        selectedValue={filtroStatus}
+                        minWidth={200}
+                        placeholder="Filtrar por tipo"
+                        onValueChange={(itemValue) => setFiltroStatus(itemValue)}
+                        mr={2}
+                    >
+                        <Select.Item label="Tipo 1" value="tipo1" />
+                        <Select.Item label="Tipo 2" value="tipo2" />
+                        <Select.Item label="Tipo 3" value="tipo3" />
+                    </Select>
+                    <Input
+                        value={filtroDataInicial}
+                        onChangeText={(text) => setFiltroDataInicial(text)}
+                        placeholder="Data inicial"
+                        size="md"
+                        w={200}
+                        mr={2}
+                    />
+                    <Input
+                        value={filtroDataFinal}
+                        onChangeText={(text) => setFiltroDataFinal(text)}
+                        placeholder="Data final"
+                        size="md"
+                        w={200}
+                        mr={2}
+                    />
                 {exibirEventos()}
             </Box>
         </ScrollView>
     );
 };
 
-export default painelControle;
+export default controleEventos;

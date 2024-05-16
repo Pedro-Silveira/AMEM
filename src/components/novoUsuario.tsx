@@ -99,7 +99,7 @@ const NovoUsuario = () => {
                         permissao: permissao
                     }).then(() => {
                         showToast(toast, "#404040", "O usuário foi cadastrado com sucesso!");
-                        navigation.navigate("Painel de Controle - AMEM" as never);
+                        navigation.navigate("Controle de Eventos - AMEM" as never);
                     }).catch((error) => {
                         showToast(toast, "#E11D48", errorTranslate(error));
                     });

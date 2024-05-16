@@ -69,7 +69,7 @@ const DetalhesEvento = ({ route }: { route: any }) => {
         remove(ref(db, 'eventos/' + evento.id))
         .then(() => {
             showToast(toast, "#404040", "O evento foi excluído com sucesso!");
-            navigation.navigate("Painel de Controle - AMEM");
+            navigation.navigate("Controle de Eventos - AMEM");
         })
         .catch((error) => {
             showToast(toast, "#E11D48", errorTranslate(error));
@@ -137,7 +137,7 @@ const DetalhesEvento = ({ route }: { route: any }) => {
             status: "Planejado"
         }).then(() => {
             showToast(toast, "#404040", "O evento foi editado com sucesso!");
-            navigation.navigate("Painel de Controle - AMEM" as never);
+            navigation.navigate("Controle de Eventos - AMEM" as never);
         }).catch((error) => {
             showToast(toast, "#E11D48", errorTranslate(error));
         });
@@ -149,7 +149,7 @@ const DetalhesEvento = ({ route }: { route: any }) => {
             status: "Encerrado"
         }).then(() => {
             showToast(toast, "#404040", "O evento foi encerrado com sucesso!");
-            navigation.navigate("Painel de Controle - AMEM" as never);
+            navigation.navigate("Controle de Eventos - AMEM" as never);
         }).catch((error) => {
             showToast(toast, "#E11D48", errorTranslate(error));
         });
@@ -159,7 +159,7 @@ const DetalhesEvento = ({ route }: { route: any }) => {
         <ScrollView contentContainerStyle={{width:'100%'}}>
             <Box style={styles.boxCentral}>
                 <Box style={styles.box1}>
-                    <Pressable style={styles.box3} onPress={() => navigation.navigate("Painel de Controle - AMEM")}>
+                    <Pressable style={styles.box3} onPress={() => navigation.navigate("Controle de Eventos - AMEM")}>
                         <Icon as={MaterialIcons} name="navigate-before" size={25} color={"#818181"} />
                         <Text textAlign={"left"} bold fontSize={"3xl"}>Detalhes do Evento</Text>
                     </Pressable>
