@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { StyleSheet } from "react-native";
 import { Box, Button, FormControl, Icon, Input, Pressable, ScrollView, Text, useToast, WarningOutlineIcon } from "native-base";
 import { useNavigation } from "@react-navigation/native";
@@ -33,7 +33,22 @@ const registrarVoluntario = ({ route }: { route: any }) => {
     const navigation = useNavigation<any>();
     const toast = useToast();
 
-    // Limpa os campos do formulário.
+    const nomeRef = useRef(null);
+    const cursoRef = useRef(null);
+    const telefoneRef = useRef(null);
+    const emailRef = useRef(null);
+    const horasRef = useRef(null);
+
+    const handleKeyPress = (event: any, nextRef: any) => {
+        if (event.nativeEvent.key === 'Enter') {
+            if (nextRef) {
+                nextRef.current.focus();
+            } else {
+                validarVoluntario();
+            }
+        }
+    };
+
     const limpar = () => {
         setNome('');
         setCurso('');
@@ -43,7 +58,6 @@ const registrarVoluntario = ({ route }: { route: any }) => {
         setErros({});
     };
 
-    // Valida os campos do formulário através de expressões regulares.
     const validarVoluntario = () => {
         let erros = 0;
 
@@ -99,7 +113,6 @@ const registrarVoluntario = ({ route }: { route: any }) => {
         }
     };
 
-    // Adiciona o registro no banco de dados.
     const adicionarVoluntario = () => {
         push(ref(db, 'eventos/' + evento.id + '/voluntarios/'), {
             nome: nome,
@@ -115,7 +128,6 @@ const registrarVoluntario = ({ route }: { route: any }) => {
         });
     };
 
-    // Cria os elementos visuais em tela.
     return (
         <ScrollView contentContainerStyle={{width:'100%'}}>
             <Box style={styles.boxCentral}>
@@ -129,27 +141,67 @@ const registrarVoluntario = ({ route }: { route: any }) => {
                 <Box style={styles.box1}>
                     <FormControl isRequired isInvalid={'nome' in erros}>
                         <FormControl.Label>Nome Completo:</FormControl.Label>
-                        <Input value={nome} placeholder="Ex.: João Vithor" onChangeText={novoNome => setNome(novoNome)} backgroundColor={"white"} size={"lg"}/>
+                        <Input 
+                            ref={nomeRef}
+                            value={nome} 
+                            placeholder="Ex.: João Vithor" 
+                            onChangeText={novoNome => setNome(novoNome)} 
+                            backgroundColor={"white"} 
+                            size={"lg"}
+                            onKeyPress={(e) => handleKeyPress(e, cursoRef)}
+                        />
                         {'nome' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.nome}</FormControl.ErrorMessage> : ''}
                     </FormControl>
                     <FormControl isRequired isInvalid={'curso' in erros}>
                         <FormControl.Label>Curso:</FormControl.Label>
-                        <Input value={curso} placeholder="Ex.: Ciência da Computação" onChangeText={novoCurso => setCurso(novoCurso)} backgroundColor={"white"} size={"lg"}/>
+                        <Input 
+                            ref={cursoRef}
+                            value={curso} 
+                            placeholder="Ex.: Ciência da Computação" 
+                            onChangeText={novoCurso => setCurso(novoCurso)} 
+                            backgroundColor={"white"} 
+                            size={"lg"}
+                            onKeyPress={(e) => handleKeyPress(e, telefoneRef)}
+                        />
                         {'curso' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.curso}</FormControl.ErrorMessage> : ''}
                     </FormControl>
                     <FormControl isInvalid={'telefone' in erros}>
                         <FormControl.Label>Telefone:</FormControl.Label>
-                        <Input value={telefone} placeholder="Ex.: (51) 91234-5678" onChangeText={novoTelefone => setTelefone(novoTelefone)} backgroundColor={"white"} size={"lg"}/>
+                        <Input 
+                            ref={telefoneRef}
+                            value={telefone} 
+                            placeholder="Ex.: (51) 91234-5678" 
+                            onChangeText={novoTelefone => setTelefone(novoTelefone)} 
+                            backgroundColor={"white"} 
+                            size={"lg"}
+                            onKeyPress={(e) => handleKeyPress(e, emailRef)}
+                        />
                         {'telefone' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.telefone}</FormControl.ErrorMessage> : ''}
                     </FormControl>
                     <FormControl isInvalid={'email' in erros}>
                         <FormControl.Label>E-mail:</FormControl.Label>
-                        <Input value={email} placeholder="Ex.: pedro.silveira@unilasalle.edu.br" onChangeText={novoEmail => setEmail(novoEmail)} backgroundColor={"white"} size={"lg"}/>
+                        <Input 
+                            ref={emailRef}
+                            value={email} 
+                            placeholder="Ex.: pedro.silveira@unilasalle.edu.br" 
+                            onChangeText={novoEmail => setEmail(novoEmail)} 
+                            backgroundColor={"white"} 
+                            size={"lg"}
+                            onKeyPress={(e) => handleKeyPress(e, horasRef)}
+                        />
                         {'email' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.email}</FormControl.ErrorMessage> : ''}
                     </FormControl>
                     <FormControl isRequired isInvalid={'horas' in erros}>
                         <FormControl.Label>Horas Complementares:</FormControl.Label>
-                        <Input value={horas} placeholder="Ex.: 5" onChangeText={novaHoras => setHoras(novaHoras)} backgroundColor={"white"} size={"lg"}/>
+                        <Input 
+                            ref={horasRef}
+                            value={horas} 
+                            placeholder="Ex.: 5" 
+                            onChangeText={novaHoras => setHoras(novaHoras)} 
+                            backgroundColor={"white"} 
+                            size={"lg"}
+                            onKeyPress={(e) => handleKeyPress(e, null)}
+                        />
                         {'horas' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.horas}</FormControl.ErrorMessage> : ''}
                     </FormControl>
                 </Box>

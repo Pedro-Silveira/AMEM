@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { AlertDialog, Box, Button, FormControl, HStack, Icon, Input, Pressable, ScrollView, Spacer, Text, TextArea, Tooltip, useToast, VStack, WarningOutlineIcon } from "native-base";
+import { AlertDialog, Box, Button, FormControl, HStack, Icon, Input, Pressable, ScrollView, Select, Spacer, Text, TextArea, Tooltip, useToast, VStack, WarningOutlineIcon } from "native-base";
 import { StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { onValue, ref, remove, update } from "firebase/database";
-import { db } from "../services/firebaseConfig";
+import { auth, db } from "../services/firebaseConfig";
 import { MaterialIcons } from '@expo/vector-icons';
 import showToast from "../util/showToast";
 import errorTranslate from "../util/errorTranslate";
+import useUserPermission from "../util/getPermission";
 
 const DetalhesEvento = ({ route }: { route: any }) => {
     const { evento } = route.params;
+    const userPermission = useUserPermission();
     const [nome, setNome] = useState(evento.nome);
     const [data, setData] = useState(evento.data);
     const [local, setLocal] = useState(evento.local);
@@ -19,10 +21,22 @@ const DetalhesEvento = ({ route }: { route: any }) => {
     const navigation = useNavigation<any>();
     const [dadosDoacoes, setDoacoes] = useState<any>([]);
     const [dadosVoluntarios, setVoluntarios] = useState<any>([]);
+    const [filtroDoacao, setFiltroDoacao] = useState("");
+    const [filtroTipo, setFiltroTipo] = useState("");
+    const [filtroVoluntario, setFiltroVoluntario] = useState("");
     const toast = useToast();
     const [isOpen, setIsOpen] = React.useState(false);
     const onClose = () => setIsOpen(false);
     const cancelRef = React.useRef(null);
+
+    const limparFiltrosDoacao = () => {
+        setFiltroDoacao("");
+        setFiltroTipo("");
+    };
+
+    const limparFiltrosVoluntario = () => {
+        setFiltroVoluntario("");
+    };
 
     useEffect(() => {
         const queryDoacoes = ref(db, "eventos/" + evento.id + "/doacoes/");
@@ -36,13 +50,16 @@ const DetalhesEvento = ({ route }: { route: any }) => {
                 .map(key => ({
                     id: key,
                     ...dataDoacoes[key]
-                }));
+                })).filter((doacao: { organizacao: any; material: any; tipo: any; }) => 
+                    (filtroDoacao === "" || (doacao.organizacao.toLowerCase().includes(filtroDoacao.toLowerCase())) || doacao.material.toLowerCase().includes(filtroDoacao.toLowerCase())) && 
+                    (filtroTipo === "" || doacao.tipo === filtroTipo)
+                );
                 setDoacoes(novosUsuarios);
             } else {
                 setDoacoes([]);
             }
         });
-    }, []);
+    }, [filtroDoacao, filtroTipo]);
 
     useEffect(() => {
         const queryVoluntarios = ref(db, "eventos/" + evento.id + "/voluntarios/");
@@ -56,13 +73,14 @@ const DetalhesEvento = ({ route }: { route: any }) => {
                 .map(key => ({
                     id: key,
                     ...dataVoluntarios[key]
-                }));
+                })).filter((voluntario: { nome: any; }) => 
+                    (filtroVoluntario === "" || voluntario.nome.toLowerCase().includes(filtroVoluntario.toLowerCase())));
                 setVoluntarios(novosVoluntarios);
             } else {
                 setVoluntarios([]);
             }
         });
-    }, []);
+    }, [filtroVoluntario]);
 
     // Remove o registro do banco de dados.
     const excluirEvento = () => {
@@ -163,10 +181,13 @@ const DetalhesEvento = ({ route }: { route: any }) => {
                         <Icon as={MaterialIcons} name="navigate-before" size={25} color={"#818181"} />
                         <Text textAlign={"left"} bold fontSize={"3xl"}>Detalhes do Evento</Text>
                     </Pressable>
+                    {userPermission == "editor" && evento.status != "Encerrado" || userPermission == "administrador" ? 
                     <Box flexDirection={"row"}>
+                        {userPermission == "administrador" ? 
                         <Tooltip label="Excluir" openDelay={500}>
                             <Button onPress={() => setIsOpen(!isOpen)} marginRight={2} leftIcon={<Icon as={MaterialIcons} name="delete" />} size={"sm"} backgroundColor={"#E11D48"} _hover={{backgroundColor: "#BE123C"}} />
                         </Tooltip>
+                        : "" }
                         <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
                             <AlertDialog.Content>
                             <AlertDialog.CloseButton />
@@ -192,7 +213,7 @@ const DetalhesEvento = ({ route }: { route: any }) => {
                         <Tooltip label="Encerrar" openDelay={500}>
                             <Button onPress={encerrarEvento} leftIcon={<Icon as={MaterialIcons} name="done" />} size={"sm"} backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}} />
                         </Tooltip>
-                    </Box>
+                    </Box> : ""}
                 </Box>
                 <Box style={styles.box2}>
                     <FormControl isRequired isInvalid={'nome' in erros}>
@@ -233,7 +254,20 @@ const DetalhesEvento = ({ route }: { route: any }) => {
                 </Box>
                 <Box style={styles.box1}>
                     <Text textAlign={"left"} bold fontSize={"xl"}>Doações</Text>
-                    <Button onPress={() => navigation.navigate("Registrar Doação - AMEM", { evento: evento })} leftIcon={<Icon as={MaterialIcons} name="add" />} size={"sm"} backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}}>Registrar Doação</Button>
+                    {userPermission == "editor" || userPermission == "administrador" ? 
+                        <Button onPress={() => navigation.navigate("Registrar Doação - AMEM", { evento: evento })} leftIcon={<Icon as={MaterialIcons} name="add" />} size={"sm"} backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}}>Registrar Doação</Button>
+                    : "" }
+                </Box>
+                <Box flexDir={"row"} mb={2}>
+                    <Input flex={2} mr={2} backgroundColor={"white"} InputRightElement={<Icon as={MaterialIcons} name="search" color={"#bebebe"} mr={2} />} value={filtroDoacao} onChangeText={(text) => setFiltroDoacao(text)} placeholder="Filtrar pelo material/organização..." size="md"/>
+                    <Select dropdownIcon={<Icon as={MaterialIcons} name="keyboard-arrow-down" color={"#bebebe"} mr={2} />} flex={1} mr={2} backgroundColor={"white"} size={"md"} selectedValue={filtroTipo} placeholder="Filtrar pelo tipo..." onValueChange={(itemValue) => setFiltroTipo(itemValue)}>
+                        <Select.Item label="Todos" value="" />
+                        <Select.Item label="Efetuada" value="efetuada" />
+                        <Select.Item label="Recebida" value="recebida" />
+                    </Select>
+                    <Tooltip label="Limpar filtros" openDelay={500}>
+                        <Button onPress={limparFiltrosDoacao} leftIcon={<Icon as={MaterialIcons} name="restart-alt" />} h={35} size={"sm"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} />
+                    </Tooltip>
                 </Box>
                 <Box borderWidth={1} borderColor={"#D4D4D4"} backgroundColor={"#fff"} rounded={5} marginBottom={25}>
                     {dadosDoacoes.length !== 0 ? dadosDoacoes.map((item: any, index: any) => (
@@ -264,7 +298,15 @@ const DetalhesEvento = ({ route }: { route: any }) => {
                 </Box>
                 <Box style={styles.box1}>
                     <Text textAlign={"left"} bold fontSize={"xl"}>Voluntários</Text>
-                    <Button onPress={() => navigation.navigate("Registrar Voluntário - AMEM", { evento: evento })} leftIcon={<Icon as={MaterialIcons} name="add" />} size={"sm"} backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}}>Registrar Voluntário</Button>
+                    {userPermission == "editor" || userPermission == "administrador" ? 
+                        <Button onPress={() => navigation.navigate("Registrar Voluntário - AMEM", { evento: evento })} leftIcon={<Icon as={MaterialIcons} name="add" />} size={"sm"} backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}}>Registrar Voluntário</Button>
+                    : "" }
+                </Box>
+                <Box flexDir={"row"} mb={2}>
+                    <Input flex={2} mr={2} backgroundColor={"white"} InputRightElement={<Icon as={MaterialIcons} name="search" color={"#bebebe"} mr={2} />} value={filtroVoluntario} onChangeText={(text) => setFiltroVoluntario(text)} placeholder="Filtrar pelo nome..." size="md"/>
+                    <Tooltip label="Limpar filtros" openDelay={500}>
+                        <Button onPress={limparFiltrosVoluntario} leftIcon={<Icon as={MaterialIcons} name="restart-alt" />} h={35} size={"sm"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} />
+                    </Tooltip>
                 </Box>
                 <Box borderWidth={1} borderColor={"#D4D4D4"} backgroundColor={"#fff"} rounded={5}>
                     {dadosVoluntarios.length !== 0 ? dadosVoluntarios.map((item: any, index: any) => (

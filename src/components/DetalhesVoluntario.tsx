@@ -8,6 +8,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import showToast from "../util/showToast";
 import testRegex from "../util/testRegex";
 import errorTranslate from "../util/errorTranslate";
+import useUserPermission from "../util/getPermission";
 
 const styles = StyleSheet.create({
     boxCentral: {
@@ -30,6 +31,7 @@ const styles = StyleSheet.create({
 
 const DetalhesVoluntario = ({ route }: { route: any }) => {
     const { evento, voluntario } = route.params;
+    const userPermission = useUserPermission();
     const [nome, setNome] = useState(voluntario.nome);
     const [curso, setCurso] = useState(voluntario.curso);
     const [telefone, setTelefone] = useState(voluntario.telefone);
@@ -135,8 +137,11 @@ const DetalhesVoluntario = ({ route }: { route: any }) => {
                         <Icon as={MaterialIcons} name="navigate-before" size={25} color={"#818181"} />
                         <Text bold fontSize={"3xl"}>Detalhes do Voluntário</Text>
                     </Pressable>
+                    {userPermission == "editor" || userPermission == "administrador" ? 
                     <Box flexDirection={"row"}>
-                        <Button onPress={() => setIsOpen(!isOpen)} marginRight={2} leftIcon={<Icon as={MaterialIcons} name="delete" />} size={"sm"} backgroundColor={"#E11D48"} _hover={{backgroundColor: "#BE123C"}}>Excluir</Button>
+                        {userPermission == "administrador" ? 
+                            <Button onPress={() => setIsOpen(!isOpen)} marginRight={2} leftIcon={<Icon as={MaterialIcons} name="delete" />} size={"sm"} backgroundColor={"#E11D48"} _hover={{backgroundColor: "#BE123C"}}>Excluir</Button>
+                        : "" }
                         <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
                             <AlertDialog.Content>
                             <AlertDialog.CloseButton />
@@ -157,7 +162,7 @@ const DetalhesVoluntario = ({ route }: { route: any }) => {
                             </AlertDialog.Content>
                         </AlertDialog>
                         <Button onPress={validarVoluntario} leftIcon={<Icon as={MaterialIcons} name="save" />} h={35} size={"sm"} backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}}>Salvar</Button>
-                    </Box>
+                    </Box> : "" }
                 </Box>
                 <Box style={styles.box2}>
                     <FormControl isRequired isInvalid={'nome' in erros}>

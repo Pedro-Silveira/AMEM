@@ -5,10 +5,12 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { auth, db } from "../services/firebaseConfig";
 import { onValue, ref } from "firebase/database";
 import calcularDias from "../util/dateCalculator";
+import useUserPermission from "../util/getPermission";
 
 const Navbar = () => {
     const navigation = useNavigation();
     const [dados, setDados] = useState<any>([]);
+    const userPermission = useUserPermission();
 
     useEffect(() => {
         const query = ref(db, "eventos/");
@@ -59,13 +61,13 @@ const Navbar = () => {
                     <Menu.Group title={"Olá, " + auth.currentUser?.displayName + "!"}>
                         <Divider my="2" w="100%" />
                         <Menu.Item onPress={() => navigation.navigate("Controle de Eventos - AMEM" as never)}>Controle de Eventos</Menu.Item>
-                        <Menu.Item onPress={() => navigation.navigate("Novo Usuário - AMEM" as never)}>Novo Usuário</Menu.Item>
-                        <Divider my="2" w="100%" />
+                        {userPermission == "administrador" ? 
+                        <><Menu.Item onPress={() => navigation.navigate("Controle de Usuários - AMEM" as never)}>Controle de Usuários</Menu.Item><Divider my="2" w="100%" /></> : <Divider my="2" w="100%" />}
                         <Menu.Item onPress={() => auth.signOut()}>Sair</Menu.Item>
                     </Menu.Group>
                 </Menu>
                 <Pressable onPress={() => navigation.navigate("Controle de Eventos - AMEM" as never)}>
-                    <Image height={30} width={75} marginLeft={5} resizeMode={"contain"} source={require("./../media/AMEM.png")} alt="AMEM" />
+                    <Image height={30} width={75} marginLeft={6} resizeMode={"contain"} source={require("./../media/AMEM.png")} alt="AMEM" />
                 </Pressable>
             </Box>
             <Popover trigger={triggerProps => {

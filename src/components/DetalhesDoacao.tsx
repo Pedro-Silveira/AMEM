@@ -7,6 +7,7 @@ import { ref, remove, update } from "firebase/database";
 import { MaterialIcons } from '@expo/vector-icons';
 import showToast from "../util/showToast";
 import errorTranslate from "../util/errorTranslate";
+import useUserPermission from "../util/getPermission";
 
 const styles = StyleSheet.create({
     boxCentral: {
@@ -29,6 +30,7 @@ const styles = StyleSheet.create({
 
 const detalhesDoacao = ({ route }: { route: any }) => {
     const { evento, doacao } = route.params;
+    const userPermission = useUserPermission();
     const [tipo, setTipo] = useState(doacao.tipo);0
     const [organizacao, setOrganizacao] = useState(doacao.organizacao);
     const [material, setMaterial] = useState(doacao.material);
@@ -136,8 +138,11 @@ const detalhesDoacao = ({ route }: { route: any }) => {
                         <Icon as={MaterialIcons} name="navigate-before" size={25} color={"#818181"} />
                         <Text bold fontSize={"3xl"}>Detalhes da Doação</Text>
                     </Pressable>
+                    {userPermission == "editor" && evento.status != "Encerrado" || userPermission == "administrador" ? 
                     <Box flexDirection={"row"}>
-                        <Button onPress={() => setIsOpen(!isOpen)} marginRight={2} leftIcon={<Icon as={MaterialIcons} name="delete" />} size={"sm"} backgroundColor={"#E11D48"} _hover={{backgroundColor: "#BE123C"}}>Excluir</Button>
+                        {userPermission == "administrador" ? 
+                            <Button onPress={() => setIsOpen(!isOpen)} marginRight={2} leftIcon={<Icon as={MaterialIcons} name="delete" />} size={"sm"} backgroundColor={"#E11D48"} _hover={{backgroundColor: "#BE123C"}}>Excluir</Button>
+                        : "" }
                         <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
                             <AlertDialog.Content>
                             <AlertDialog.CloseButton />
@@ -158,12 +163,12 @@ const detalhesDoacao = ({ route }: { route: any }) => {
                             </AlertDialog.Content>
                         </AlertDialog>
                         <Button onPress={validarDoacao} leftIcon={<Icon as={MaterialIcons} name="save" />} h={35} size={"sm"} backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}}>Salvar</Button>
-                    </Box>
+                    </Box> : "" }
                 </Box>
                 <Box style={styles.box2}>
                     <FormControl isRequired isInvalid={'tipo' in erros}>
                         <FormControl.Label>Tipo:</FormControl.Label>
-                        <Select selectedValue={tipo} onValueChange={novoTipo => setTipo(novoTipo)} placeholder="Escolha um tipo..." _selectedItem={{bg: "teal.600", endIcon: <CheckIcon size={1} />}} backgroundColor={"white"} size={"lg"}>
+                        <Select dropdownIcon={<Icon as={MaterialIcons} name="keyboard-arrow-down" color={"#bebebe"} mr={2} size={"xl"} />} selectedValue={tipo} onValueChange={novoTipo => setTipo(novoTipo)} placeholder="Escolha um tipo..." backgroundColor={"white"} size={"lg"}>
                             <Select.Item label="Recebida" value="recebida" />
                             <Select.Item label="Efetuada" value="efetuada" />
                         </Select>
@@ -186,7 +191,7 @@ const detalhesDoacao = ({ route }: { route: any }) => {
                     </FormControl>
                     <FormControl isInvalid={'unidade' in erros}>
                         <FormControl.Label>Unidade de Medida:</FormControl.Label>
-                        <Select selectedValue={unidade} onValueChange={novaUnidade => setUnidade(novaUnidade)} placeholder="Escolha uma unidade de medida..." _selectedItem={{bg: "teal.600", endIcon: <CheckIcon size={1} />}} backgroundColor={"white"} size={"lg"}>
+                        <Select dropdownIcon={<Icon as={MaterialIcons} name="keyboard-arrow-down" color={"#bebebe"} mr={2} size={"xl"} />} selectedValue={unidade} onValueChange={novaUnidade => setUnidade(novaUnidade)} placeholder="Escolha uma unidade de medida..." backgroundColor={"white"} size={"lg"}>
                             <Select.Item label="Caixa" value="cx." />
                             <Select.Item label="Fardo" value="fdo." />
                             <Select.Item label="Galão" value="gal." />

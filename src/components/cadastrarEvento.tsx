@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { StyleSheet } from "react-native";
-import { Box, Button, Checkbox, FormControl, HStack, Icon, Input, Pressable, ScrollView, Spacer, Text, TextArea, useToast, VStack, WarningOutlineIcon } from "native-base";
+import { Box, Button, Checkbox, FormControl, HStack, Icon, Input, Pressable, ScrollView, Spacer, Text, TextArea, Tooltip, useToast, VStack, WarningOutlineIcon } from "native-base";
 import { useNavigation } from "@react-navigation/native";
 import { db } from "../services/firebaseConfig";
 import { ref, push, onValue } from "firebase/database";
@@ -28,11 +28,31 @@ const cadastrarEvento = () => {
     const [investimento, setInvestimento] = useState('');
     const [usuarios, setUsuarios] =  useState<string[]>([]);
     const [observacoes, setObservacoes] = useState('');
+    const [filtroUsuario, setFiltroUsuario] = useState("");
     const [erros, setErros] = useState({});
     const navigation = useNavigation();
     const toast = useToast();
 
-    // Adiciona ou remove usuários selecionados pelo checkbox.
+    const nomeRef = useRef(null);
+    const dataRef = useRef(null);
+    const localRef = useRef(null);
+    const investimentoRef = useRef(null);
+    const observacoesRef = useRef(null);
+
+    const handleKeyPress = (event: any, nextRef: any) => {
+        if (event.nativeEvent.key === 'Enter') {
+            if (nextRef) {
+                nextRef.current.focus();
+            } else {
+                validarEvento();
+            }
+        }
+    };
+
+    const limparFiltros = () => {
+        setFiltroUsuario("");
+    };
+
     const listaCheckbox = (id: string) => {
         if (usuarios.includes(id)) {
             setUsuarios(usuarios.filter(item => item !== id));
@@ -41,7 +61,6 @@ const cadastrarEvento = () => {
         }
     };
 
-    // Limpa os campos do formulário.
     const limpar = () => {
         setNome('');
         setData('');
@@ -51,7 +70,6 @@ const cadastrarEvento = () => {
         setErros({});
     };
 
-    // Busca e adiciona os usuários na lista.
     const buscarUsuarios = () => {
         const [dados, setDados] = useState<any>([]);
     
@@ -66,6 +84,9 @@ const cadastrarEvento = () => {
                         id: key,
                         ...data[key]
                     }))
+                    .filter((usuario: { nome: any; email: any; }) => 
+                        (filtroUsuario === "" || (usuario.nome.toLowerCase().includes(filtroUsuario.toLowerCase())) || usuario.email.toLowerCase().includes(filtroUsuario.toLowerCase()))
+                    )
                     .sort((a, b) => {
                         const nomeA = a.nome.toUpperCase();
                         const nomeB = b.nome.toUpperCase();
@@ -86,11 +107,11 @@ const cadastrarEvento = () => {
                     setDados([]);
                 }
             });
-        }, []);
+        }, [filtroUsuario]);
     
         return (
             <Box borderWidth={1} borderColor={"#D4D4D4"} backgroundColor={"#fff"} rounded={5}>
-                {dados.map((item: { nome: any; email: any; }, index: any) => (
+                {dados.length !== 0 ? dados.map((item: { nome: any; email: any; }, index: any) => (
                     <Box key={index} borderBottomWidth={1} borderBottomColor={"#D4D4D4"} py="2" pl="4" pr={5}>
                         <HStack space={[2, 3]} justifyContent="space-between" alignItems={"center"}>
                             <VStack>
@@ -105,12 +126,11 @@ const cadastrarEvento = () => {
                             <Checkbox onChange={() => listaCheckbox(item.email)} _checked={{ bgColor: "#1C3D8C", borderColor: "#1C3D8C" }} value={item.email} />
                         </HStack>
                     </Box>
-                ))}
+                )) : <Text py="2" px="4">Não há usuários.</Text>}
             </Box>
         );
     };
 
-    // Valida os campos do formulário através de expressões regulares.
     const validarEvento = () => {
         const nomeRegex = new RegExp(/^[^\s].*$/);
         const dataRegex = new RegExp(/^\d{2}\/\d{2}\/\d{4}$/);
@@ -160,7 +180,6 @@ const cadastrarEvento = () => {
         }
     };
 
-    // Adiciona o registro no banco de dados.
     const adicionarEvento = () => {
         push(ref(db, 'eventos/'), {
             nome: nome,
@@ -177,7 +196,6 @@ const cadastrarEvento = () => {
         });
     };
 
-    // Cria os elementos visuais em tela.
     return (
         <ScrollView contentContainerStyle={{width:'100%'}}>
             <Box style={styles.boxCentral}>
@@ -191,41 +209,88 @@ const cadastrarEvento = () => {
                 <Box style={styles.box1}>
                     <FormControl isRequired isInvalid={'nome' in erros}>
                         <FormControl.Label>Nome:</FormControl.Label>
-                        <Input value={nome} placeholder="Ex.: Ação de Graças" onChangeText={novoNome => setNome(novoNome)} backgroundColor={"white"} size={"lg"} />
+                        <Input 
+                            ref={nomeRef}
+                            value={nome} 
+                            placeholder="Ex.: Ação de Graças" 
+                            onChangeText={novoNome => setNome(novoNome)} 
+                            backgroundColor={"white"} 
+                            size={"lg"} 
+                            onKeyPress={(e) => handleKeyPress(e, dataRef)}
+                        />
                         {'nome' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.nome}</FormControl.ErrorMessage>: ''
                         }
                     </FormControl>
                     <FormControl isRequired isInvalid={'data' in erros}>
                         <FormControl.Label>Data:</FormControl.Label>
-                        <Input value={data} placeholder="Ex.: 02/08/1972" onChangeText={novaData => setData(novaData)} backgroundColor={"white"} size={"lg"}/>
+                        <Input 
+                            ref={dataRef}
+                            value={data} 
+                            placeholder="Ex.: 02/08/1972" 
+                            onChangeText={novaData => setData(novaData)} 
+                            backgroundColor={"white"} 
+                            size={"lg"}
+                            onKeyPress={(e) => handleKeyPress(e, localRef)}
+                        />
                         {'data' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.data}</FormControl.ErrorMessage>: ''
                         }
                     </FormControl>
                     <FormControl isRequired isInvalid={'local' in erros}>
                         <FormControl.Label>Local:</FormControl.Label>
-                        <Input value={local} placeholder="Ex.: Capela São José" onChangeText={novoLocal => setLocal(novoLocal)} backgroundColor={"white"} size={"lg"}/>
+                        <Input 
+                            ref={localRef}
+                            value={local} 
+                            placeholder="Ex.: Capela São José" 
+                            onChangeText={novoLocal => setLocal(novoLocal)} 
+                            backgroundColor={"white"} 
+                            size={"lg"}
+                            onKeyPress={(e) => handleKeyPress(e, investimentoRef)}
+                        />
                         {'local' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.local}</FormControl.ErrorMessage>: ''
                         }
                     </FormControl>
                     <FormControl isRequired isInvalid={'investimento' in erros}>
                         <FormControl.Label>Investimento:</FormControl.Label>
-                        <Input value={investimento} placeholder="Ex.: 1.080,00" onChangeText={novoInvestimento => setInvestimento(novoInvestimento)} backgroundColor={"white"} size={"lg"}/>
+                        <Input 
+                            ref={investimentoRef}
+                            value={investimento} 
+                            placeholder="Ex.: 1.080,00" 
+                            onChangeText={novoInvestimento => setInvestimento(novoInvestimento)} 
+                            backgroundColor={"white"} 
+                            size={"lg"}
+                            onKeyPress={(e) => handleKeyPress(e, observacoesRef)}
+                        />
                         {'investimento' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.investimento}</FormControl.ErrorMessage>: ''
                         }
                     </FormControl>
                     <FormControl isInvalid={'observacoes' in erros}>
                         <FormControl.Label>Observações:</FormControl.Label>
-                        <TextArea value={observacoes} onChangeText={novaObservacao => setObservacoes(novaObservacao)} backgroundColor={"white"} w="100%" h={100} autoCompleteType={undefined} />
+                        <TextArea 
+                            ref={observacoesRef}
+                            value={observacoes} 
+                            onChangeText={novaObservacao => setObservacoes(novaObservacao)} 
+                            backgroundColor={"white"} 
+                            w="100%" 
+                            h={100} 
+                            autoCompleteType={undefined}
+                            onKeyPress={(e) => handleKeyPress(e, null)}
+                        />
                         {'observacoes' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.observacoes}</FormControl.ErrorMessage> : ''
                         }
                     </FormControl>
                     <FormControl isInvalid={'usuarios' in erros}>
                         <FormControl.Label>Encaminhar para:</FormControl.Label>
+                        <Box flexDir={"row"} mb={2}>
+                            <Input flex={2} mr={2} backgroundColor={"white"} InputRightElement={<Icon as={MaterialIcons} name="search" color={"#bebebe"} mr={2} />} value={filtroUsuario} onChangeText={(text) => setFiltroUsuario(text)} placeholder="Filtrar pelo nome/e-mail..." size="md"/>
+                            <Tooltip label="Limpar filtros" openDelay={500}>
+                                <Button onPress={limparFiltros} leftIcon={<Icon as={MaterialIcons} name="restart-alt" />} h={35} size={"sm"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} />
+                            </Tooltip>
+                        </Box>
                         {buscarUsuarios()}
                     </FormControl>
                 </Box>
