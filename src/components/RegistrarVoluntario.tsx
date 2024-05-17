@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
     }
 });
 
-const registrarVoluntario = ({ route }: { route: any }) => {
+const RegistrarVoluntario = ({ route }: { route: any }) => {
     const { evento } = route.params;
     const [nome, setNome] = useState('');
     const [curso, setCurso] = useState('');
@@ -214,4 +214,4 @@ const registrarVoluntario = ({ route }: { route: any }) => {
     );
 };
 
-export default registrarVoluntario;
+export default RegistrarVoluntario;

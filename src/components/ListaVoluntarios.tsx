@@ -57,18 +57,17 @@ const ListaVoluntarios = () => {
                 <Box flexDir={"row"} mb={2}>
                     <Input flex={2} mr={2} backgroundColor={"white"} InputRightElement={<Icon as={MaterialIcons} name="search" color={"#bebebe"} mr={2} />} value={filtroNome} onChangeText={(text) => setFiltroNome(text)} placeholder="Filtrar pelo nome..." size="md"/>
                     <Tooltip label="Limpar filtros" openDelay={500}>
-                        <Button onPress={limparFiltros} leftIcon={<Icon as={MaterialIcons} name="restart-alt" />} h={35} size={"sm"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} />
+                        <Button onPress={limparFiltros} leftIcon={<Icon as={MaterialIcons} name="restart-alt" />} size={"sm"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} />
                     </Tooltip>
                 </Box>
                 <Box borderWidth={1} borderColor={"#D4D4D4"} backgroundColor={"#fff"} rounded={5}>
                     {dadosVoluntarios.length !== 0 ? dadosVoluntarios.map((item: any, index: any) => (
                         <Pressable>
                             {({
-                                isHovered,
-                                isPressed
+                                isHovered
                             }) => {
                                 return (
-                                    <Box bg={isPressed || isHovered ? "coolGray.100" : ""} rounded={isPressed || isHovered ? 5 : 0} key={index} borderBottomWidth={1} borderBottomColor={"#D4D4D4"} py="2" pl="4" pr={5}>
+                                    <Box bg={isHovered ? "coolGray.100" : null} rounded={isHovered ? 5 : 0} key={index} borderBottomWidth={1} borderBottomColor={"#D4D4D4"} py="2" pl="4" pr={5}>
                                         <HStack space={[2, 3]} justifyContent="space-between" alignItems={"center"}>
                                             <VStack>
                                                 <Text bold>
@@ -98,6 +97,7 @@ const styles = StyleSheet.create({
     },
     box1: {
         flexDirection: "row",
+        flexWrap: "wrap",
         justifyContent: "space-between",
         alignItems: "center",
         marginBottom: 25

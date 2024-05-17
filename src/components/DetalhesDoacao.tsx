@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { StyleSheet } from "react-native";
-import { AlertDialog, Box, Button, CheckIcon, FormControl, Icon, Input, Pressable, ScrollView, Select, Text, useToast, WarningOutlineIcon } from "native-base";
+import { AlertDialog, Box, Button, CheckIcon, Divider, FormControl, Icon, Input, Pressable, ScrollView, Select, Text, useToast, WarningOutlineIcon } from "native-base";
 import { useNavigation } from "@react-navigation/native";
 import { db } from "../services/firebaseConfig";
 import { ref, remove, update } from "firebase/database";
@@ -15,6 +15,7 @@ const styles = StyleSheet.create({
     },
     box1: {
         flexDirection: "row",
+        flexWrap: "wrap",
         justifyContent: "space-between",
         alignItems: "center",
         marginBottom: 25
@@ -28,7 +29,7 @@ const styles = StyleSheet.create({
     }
 });
 
-const detalhesDoacao = ({ route }: { route: any }) => {
+const DetalhesDoacao = ({ route }: { route: any }) => {
     const { evento, doacao } = route.params;
     const userPermission = useUserPermission();
     const [tipo, setTipo] = useState(doacao.tipo);0
@@ -138,37 +139,11 @@ const detalhesDoacao = ({ route }: { route: any }) => {
                         <Icon as={MaterialIcons} name="navigate-before" size={25} color={"#818181"} />
                         <Text bold fontSize={"3xl"}>Detalhes da Doação</Text>
                     </Pressable>
-                    {userPermission == "editor" && evento.status != "Encerrado" || userPermission == "administrador" ? 
-                    <Box flexDirection={"row"}>
-                        {userPermission == "administrador" ? 
-                            <Button onPress={() => setIsOpen(!isOpen)} marginRight={2} leftIcon={<Icon as={MaterialIcons} name="delete" />} size={"sm"} backgroundColor={"#E11D48"} _hover={{backgroundColor: "#BE123C"}}>Excluir</Button>
-                        : "" }
-                        <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
-                            <AlertDialog.Content>
-                            <AlertDialog.CloseButton />
-                            <AlertDialog.Header>Excluir Doação</AlertDialog.Header>
-                            <AlertDialog.Body>
-                                Você tem certeza que deseja excluir a doação? Esta ação não poderá ser revertida.
-                            </AlertDialog.Body>
-                            <AlertDialog.Footer>
-                                <Button.Group space={2}>
-                                <Button variant="ghost" colorScheme="coolGray" onPress={onClose} ref={cancelRef}>
-                                    Cancelar
-                                </Button>
-                                <Button colorScheme="danger" onPress={excluirDoacao}>
-                                    Excluir
-                                </Button>
-                                </Button.Group>
-                            </AlertDialog.Footer>
-                            </AlertDialog.Content>
-                        </AlertDialog>
-                        <Button onPress={validarDoacao} leftIcon={<Icon as={MaterialIcons} name="save" />} h={35} size={"sm"} backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}}>Salvar</Button>
-                    </Box> : "" }
                 </Box>
                 <Box style={styles.box2}>
                     <FormControl isRequired isInvalid={'tipo' in erros}>
                         <FormControl.Label>Tipo:</FormControl.Label>
-                        <Select dropdownIcon={<Icon as={MaterialIcons} name="keyboard-arrow-down" color={"#bebebe"} mr={2} size={"xl"} />} selectedValue={tipo} onValueChange={novoTipo => setTipo(novoTipo)} placeholder="Escolha um tipo..." backgroundColor={"white"} size={"lg"}>
+                        <Select dropdownIcon={<Icon as={MaterialIcons} name="keyboard-arrow-down" color={"#bebebe"} mr={2} size={"lg"} />} selectedValue={tipo} onValueChange={novoTipo => setTipo(novoTipo)} placeholder="Escolha um tipo..." backgroundColor={"white"} size={"lg"}>
                             <Select.Item label="Recebida" value="recebida" />
                             <Select.Item label="Efetuada" value="efetuada" />
                         </Select>
@@ -205,10 +180,37 @@ const detalhesDoacao = ({ route }: { route: any }) => {
                         </Select>
                         {'unidade' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.unidade}</FormControl.ErrorMessage> : ''}
                     </FormControl>
+                    {userPermission == "editor" && evento.status != "Encerrado" || userPermission == "administrador" ? 
+                        <Box flexDirection={"row"} mt={25}>
+                            {userPermission == "administrador" ? 
+                                <Button onPress={() => setIsOpen(!isOpen)} marginRight={2} leftIcon={<Icon as={MaterialIcons} name="delete" />} size={"sm"} backgroundColor={"#E11D48"} _hover={{backgroundColor: "#BE123C"}}>Excluir</Button>
+                            : null }
+                            <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
+                                <AlertDialog.Content>
+                                <AlertDialog.CloseButton />
+                                <AlertDialog.Header>Excluir Doação</AlertDialog.Header>
+                                <AlertDialog.Body>
+                                    Você tem certeza que deseja excluir a doação? Esta ação não poderá ser revertida.
+                                </AlertDialog.Body>
+                                <AlertDialog.Footer>
+                                    <Button.Group space={2}>
+                                    <Button variant="ghost" colorScheme="coolGray" onPress={onClose} ref={cancelRef}>
+                                        Cancelar
+                                    </Button>
+                                    <Button colorScheme="danger" onPress={excluirDoacao}>
+                                        Excluir
+                                    </Button>
+                                    </Button.Group>
+                                </AlertDialog.Footer>
+                                </AlertDialog.Content>
+                            </AlertDialog>
+                            <Button onPress={validarDoacao} leftIcon={<Icon as={MaterialIcons} name="save" />} size={"sm"} backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}}>Salvar</Button>
+                        </Box>
+                    : null }
                 </Box>
             </Box>
         </ScrollView>
     );
 };
 
-export default detalhesDoacao;
+export default DetalhesDoacao;

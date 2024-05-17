@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
     }
 });
 
-const registrarDoacao = ({ route }: { route: any }) => {
+const RegistrarDoacao = ({ route }: { route: any }) => {
     const { evento } = route.params;
     const [tipo, setTipo] = useState('');
     const [organizacao, setOrganizacao] = useState('');
@@ -229,4 +229,4 @@ const registrarDoacao = ({ route }: { route: any }) => {
     );
 };
 
-export default registrarDoacao;
+export default RegistrarDoacao;

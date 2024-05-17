@@ -1,4 +1,4 @@
-import { Box, Button, HStack, Icon, Input, Pressable, ScrollView, Select, Spacer, Text, Tooltip, VStack } from "native-base";
+import { Box, Button, Divider, HStack, Icon, Input, Pressable, ScrollView, Select, Spacer, Text, Tooltip, VStack } from "native-base";
 import React, { useEffect, useState } from "react";
 import { StyleSheet } from "react-native";
 import { db } from "../services/firebaseConfig";
@@ -14,13 +14,14 @@ const styles = StyleSheet.create({
     },
     box1: {
         flexDirection: "row",
+        flexWrap: "wrap",
         justifyContent: "space-between",
         alignItems: "center",
         marginBottom: 25
     }
 });
 
-const controleEventos = () => {
+const ControleEventos = () => {
     const userPermission = useUserPermission();
     const navigation = useNavigation<any>();
     const [dados, setDados] = useState<any>([]);
@@ -104,13 +105,12 @@ const controleEventos = () => {
                 {dados.length !== 0 ? dados.map((item: any, index: any) => (
                     <Pressable key={index} onPress={() => navigation.navigate("Detalhes do Evento - AMEM", { evento: item })}>
                         {({
-                            isHovered,
-                            isPressed
+                            isHovered
                         }) => {
-                            return <Box bg={isPressed || isHovered ? "coolGray.100" : ""} rounded={isPressed || isHovered ? 5 : 0} key={index} borderBottomWidth={1} borderBottomColor={"#D4D4D4"} py="2" pl="4" pr={5}>
+                            return <Box bg={isHovered ? "coolGray.100" : null} rounded={isHovered ? 5 : 0} key={index} borderBottomWidth={1} borderBottomColor={"#D4D4D4"} py="2" pl="4" pr={5}>
                                 <HStack space={[2, 3]} justifyContent="space-between" alignItems={"center"}>
                                     <VStack>
-                                        <Text bold color={item.status == "Planejado" ? "#1C3D8C" : item.status == "Encerrado" ? "#16A34A" : ""}>
+                                        <Text bold color={item.status == "Planejado" ? "#1C3D8C" : item.status == "Encerrado" ? "#16A34A" : null}>
                                             {item.nome}
                                         </Text>
                                         <Text>
@@ -133,65 +133,64 @@ const controleEventos = () => {
             <Box style={styles.boxCentral}>
                 <Box style={styles.box1}>
                     <Text textAlign={"left"} bold fontSize={"3xl"}>Controle de Eventos</Text>
+                    <Divider mt={2} mb={4}/>
                     {userPermission == "editor" || userPermission == "administrador" ? 
-                    <Box flexDirection={"row"}>
-                        <Button onPress={() => navigation.navigate("Cadastrar Evento - AMEM")} leftIcon={<Icon as={MaterialIcons} name="add" />} size={"sm"} backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}}>Cadastrar Evento</Button>
-                    </Box> : "" }
+                        <Box flexDirection={"row"}>
+                            <Button onPress={() => navigation.navigate("Cadastrar Evento - AMEM")} leftIcon={<Icon as={MaterialIcons} name="add" />} size={"sm"} backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}}>Cadastrar Evento</Button>
+                        </Box>
+                    : null }
                 </Box>
                 <HStack justifyContent="center" mb={25}>
                     <Pressable onPress={() => setFiltroStatus("Planejado")} flex={1}>
                     {({
-                        isHovered,
-                        isPressed
+                        isHovered
                     }) => {
                         return (
-                            <Box bg={isPressed || isHovered ? "coolGray.100" : "white"} py={25} mr={2} borderWidth={1} borderColor={"#D4D4D4"} rounded={5} alignItems={"center"}>
+                            <Box bg={isHovered ? "coolGray.100" : "white"} py={25} mr={2} borderWidth={1} borderColor={"#D4D4D4"} rounded={5} alignItems={"center"}>
                             <Text bold fontSize={"3xl"}>{planejados}</Text>
-                            <Text bold color={"#1C3D8C"}>planejado(s)</Text>
+                            <Text bold textAlign={"center"} fontSize={{base: "10", md: "14"}} color={"#1C3D8C"}>planejado(s)</Text>
                         </Box>
                     );
                 }}
                     </Pressable>
                     <Pressable onPress={() => setFiltroStatus("Encerrado")} flex={1}>
                         {({
-                            isHovered,
-                            isPressed
+                            isHovered
                         }) => {
                             return (
-                                <Box bg={isPressed || isHovered ? "coolGray.100" : "white"} py={25} mr={2} borderWidth={1} borderColor={"#D4D4D4"} rounded={5} alignItems={"center"}>
+                                <Box bg={isHovered ? "coolGray.100" : "white"} py={25} mr={2} borderWidth={1} borderColor={"#D4D4D4"} rounded={5} alignItems={"center"}>
                                     <Text bold fontSize={"3xl"}>{encerrados}</Text>
-                                    <Text bold color={"#16A34A"}>encerrado(s)</Text>
+                                    <Text bold textAlign={"center"} fontSize={{base: "10", md: "14"}} color={"#16A34A"}>encerrado(s)</Text>
                                 </Box>
                             );
                         }}
                     </Pressable>
                     <Pressable onPress={() => navigation.navigate("Todas as Doações - AMEM")} flex={1}>
                         {({
-                            isHovered,
-                            isPressed
+                            isHovered
                         }) => {
                             return (
-                                <Box bg={isPressed || isHovered ? "coolGray.100" : "white"} py={25} mr={2} borderWidth={1} borderColor={"#D4D4D4"} rounded={5} alignItems={"center"}>
+                                <Box bg={isHovered ? "coolGray.100" : "white"} py={25} mr={2} borderWidth={1} borderColor={"#D4D4D4"} rounded={5} alignItems={"center"}>
                                     <Text bold fontSize={"3xl"}>{doacoes}</Text>
-                                    <Text textAlign={"center"}>doação(ões)</Text>
+                                    <Text textAlign={"center"} fontSize={{base: "10", md: "14"}}>doação(ões)</Text>
                                 </Box>
                             );
                         }}
                     </Pressable>
                     <Pressable onPress={() => navigation.navigate("Todos os Voluntários - AMEM")} flex={1}>
                         {({
-                            isHovered,
-                            isPressed
+                            isHovered
                         }) => {
                             return (
-                                <Box bg={isPressed || isHovered ? "coolGray.100" : "white"} py={25} borderWidth={1} borderColor={"#D4D4D4"} rounded={5} alignItems={"center"}>
+                                <Box bg={isHovered ? "coolGray.100" : "white"} py={25} borderWidth={1} borderColor={"#D4D4D4"} rounded={5} alignItems={"center"}>
                                     <Text bold fontSize={"3xl"}>{voluntarios}</Text>
-                                    <Text textAlign={"center"}>voluntário(s)</Text>
+                                    <Text textAlign={"center"} fontSize={{base: "10", md: "14"}}>voluntário(s)</Text>
                                 </Box>
                             );
                         }}
                     </Pressable>
                 </HStack>
+                <Text textAlign={"left"} bold fontSize={"xl"} mb={25}>Lista de Eventos</Text>
                 <Box flexDir={"row"} mb={2}>
                     <Input flex={2} mr={2} backgroundColor={"white"} InputRightElement={<Icon as={MaterialIcons} name="search" color={"#bebebe"} mr={2} />} value={filtroNome} onChangeText={(text) => setFiltroNome(text)} placeholder="Filtrar pelo nome..." size="md"/>
                     <Select dropdownIcon={<Icon as={MaterialIcons} name="keyboard-arrow-down" color={"#bebebe"} mr={2} />} flex={1} mr={2} backgroundColor={"white"} size={"md"} selectedValue={filtroStatus} placeholder="Filtrar pelo tipo..." onValueChange={(itemValue) => setFiltroStatus(itemValue)}>
@@ -202,7 +201,7 @@ const controleEventos = () => {
                     <Input flex={1} mr={2} backgroundColor={"white"} InputRightElement={<Icon as={MaterialIcons} name="date-range" color={"#bebebe"} mr={2} />} value={filtroDataInicial} onChangeText={(text) => setFiltroDataInicial(text)} placeholder="Data inicial..." size="md"/>
                     <Input flex={1} mr={2} backgroundColor={"white"} InputRightElement={<Icon as={MaterialIcons} name="date-range" color={"#bebebe"} mr={2} />} value={filtroDataFinal} onChangeText={(text) => setFiltroDataFinal(text)} placeholder="Data final..." size="md"/>
                     <Tooltip label="Limpar filtros" openDelay={500}>
-                        <Button onPress={limparFiltros} leftIcon={<Icon as={MaterialIcons} name="restart-alt" />} h={35} size={"sm"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} />
+                        <Button onPress={limparFiltros} leftIcon={<Icon as={MaterialIcons} name="restart-alt" />} size={"sm"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} />
                     </Tooltip>
                 </Box>
                 {exibirEventos()}
@@ -211,4 +210,4 @@ const controleEventos = () => {
     );
 };
 
-export default controleEventos;
+export default ControleEventos;

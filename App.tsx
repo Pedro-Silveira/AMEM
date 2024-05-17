@@ -19,7 +19,7 @@ import ListaDoacoes from "./src/components/ListaDoacoes";
 import ListaVoluntarios from "./src/components/ListaVoluntarios";
 import controleUsuarios from "./src/components/ControleUsuarios";
 import DetalhesUsuario from "./src/components/DetalhesUsuario";
-import { onValue, ref } from "firebase/database";
+import { LogBox } from 'react-native';
 
 const Stack = createNativeStackNavigator();
 const InsideStack = createNativeStackNavigator();
@@ -49,6 +49,9 @@ function InsideLayout(){
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
+
+  LogBox.ignoreLogs(['Warning: ...']);
+  LogBox.ignoreAllLogs();
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {

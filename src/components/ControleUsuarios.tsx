@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, HStack, Icon, Input, Pressable, ScrollView, Select, Spacer, Text, Tooltip, VStack } from "native-base";
+import { Box, Button, Divider, HStack, Icon, Input, Pressable, ScrollView, Select, Spacer, Text, Tooltip, VStack } from "native-base";
 import { StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { onValue, ref } from "firebase/database";
 import { db } from "../services/firebaseConfig";
 import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 
-const controleUsuarios = () => {
+const ControleUsuarios = () => {
     const navigation = useNavigation<any>();
     const [dados, setDados] = useState<any>([]);
     const [filtroUsuario, setFiltroUsuario] = useState("");
@@ -28,7 +28,20 @@ const controleUsuarios = () => {
                 }))
                 .filter((usuario: { nome: any; email: any; }) => 
                     (filtroUsuario === "" || (usuario.nome.toLowerCase().includes(filtroUsuario.toLowerCase())) || usuario.email.toLowerCase().includes(filtroUsuario.toLowerCase()))
-                );
+                ).sort((a, b) => {
+                    const nomeA = a.nome.toUpperCase();
+                    const nomeB = b.nome.toUpperCase();
+
+                    if (nomeA < nomeB) {
+                        return -1;
+                    }
+
+                    if (nomeA > nomeB) {
+                        return 1;
+                    }
+
+                    return 0;
+                });
 
                 setDados(novosUsuarios);
             } else {
@@ -42,6 +55,7 @@ const controleUsuarios = () => {
             <Box style={styles.boxCentral}>
                 <Box style={styles.box1}>
                     <Text textAlign={"left"} bold fontSize={"3xl"}>Controle de Usuários</Text>
+                    <Divider mt={2} mb={4}/>
                     <Box flexDirection={"row"}>
                         <Button onPress={() => navigation.navigate("Cadastrar Usuário - AMEM")} leftIcon={<Icon as={MaterialIcons} name="add" />} size={"sm"} backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}}>Cadastrar Usuário</Button>
                     </Box>
@@ -49,18 +63,17 @@ const controleUsuarios = () => {
                 <Box flexDir={"row"} mb={2}>
                     <Input flex={2} mr={2} backgroundColor={"white"} InputRightElement={<Icon as={MaterialIcons} name="search" color={"#bebebe"} mr={2} />} value={filtroUsuario} onChangeText={(text) => setFiltroUsuario(text)} placeholder="Filtrar pelo nome/e-mail..." size="md"/>
                     <Tooltip label="Limpar filtros" openDelay={500}>
-                        <Button onPress={limparFiltros} leftIcon={<Icon as={MaterialIcons} name="restart-alt" />} h={35} size={"sm"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} />
+                        <Button onPress={limparFiltros} leftIcon={<Icon as={MaterialIcons} name="restart-alt" />} size={"sm"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} />
                     </Tooltip>
                 </Box>
                 <Box borderWidth={1} borderColor={"#D4D4D4"} backgroundColor={"#fff"} rounded={5} marginBottom={25}>
                     {dados.length !== 0 ? dados.map((item: any, index: any) => (
                         <Pressable key={index} onPress={() => navigation.navigate("Detalhes do Usuário - AMEM", { usuario: item })}>
                             {({
-                                isHovered,
-                                isPressed
+                                isHovered
                             }) => {
                                 return (
-                                    <Box bg={isPressed || isHovered ? "coolGray.100" : ""} rounded={isPressed || isHovered ? 5 : 0} key={index} borderBottomWidth={1} borderBottomColor={"#D4D4D4"} py="2" pl="4" pr={5}>
+                                    <Box bg={isHovered ? "coolGray.100" : null} rounded={isHovered ? 5 : 0} key={index} borderBottomWidth={1} borderBottomColor={"#D4D4D4"} py="2" pl="4" pr={5}>
                                         <HStack space={[2, 3]} justifyContent="space-between" alignItems={"center"}>
                                             <VStack>
                                             <Text bold>
@@ -90,6 +103,7 @@ const styles = StyleSheet.create({
     },
     box1: {
         flexDirection: "row",
+        flexWrap: "wrap",
         justifyContent: "space-between",
         alignItems: "center",
         marginBottom: 25
@@ -103,4 +117,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default controleUsuarios;
+export default ControleUsuarios;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { sendPasswordResetEmail, signInWithEmailAndPassword, User } from "firebase/auth";
 import { auth } from "../services/firebaseConfig";
 import { Box, Button, Input, Image, ScrollView, Icon, Text, Link, useToast, Pressable, Modal, FormControl, WarningOutlineIcon } from "native-base";
@@ -15,6 +15,19 @@ const Login = () => {
     const toast = useToast();
     const ano = new Date().getFullYear();
     const [showModal, setShowModal] = useState(false);
+
+    const emailRef = useRef(null);
+    const senhaRef = useRef(null);
+
+    const handleKeyPress = (event: any, nextRef: any) => {
+        if (event.nativeEvent.key === 'Enter') {
+            if (nextRef) {
+                nextRef.current.focus();
+            } else {
+                validarLogin();
+            }
+        }
+    };
 
     const validarLogin = () => {
         let erros = 0;
@@ -84,10 +97,10 @@ const Login = () => {
             <Box padding={50} alignItems={"center"}>
                 <Image height={150} marginBottom={50} resizeMode={"contain"} source={require("./../media/AMEMLogin.png")} alt="AMEM" />
                 <FormControl isRequired isInvalid={'email' in erros} alignItems={"center"} mb={2}>
-                    <Input value={email} placeholder="Insira seu e-mail..." onChangeText={novoEmail => setEmail(novoEmail)} backgroundColor={"white"} size={"xl"} w={{base: "100%", md: "50%", lg: "30%"}} InputLeftElement={<Icon as={<MaterialIcons name="email" />} size={5} ml="3" color="#bebebe" />} />
+                    <Input ref={emailRef} onKeyPress={(e) => handleKeyPress(e, senhaRef)} value={email} placeholder="Insira seu e-mail..." onChangeText={novoEmail => setEmail(novoEmail)} backgroundColor={"white"} size={"xl"} w={{base: "100%", md: "50%", lg: "30%"}} InputLeftElement={<Icon as={<MaterialIcons name="email" />} size={5} ml="3" color="#bebebe" />} />
                 </FormControl>
                 <FormControl isRequired isInvalid={'senha' in erros} alignItems={"center"}>
-                    <Input value={senha} type={"password"} placeholder="Insira sua senha..." onChangeText={novaSenha => setSenha(novaSenha)} backgroundColor={"white"} size={"xl"} w={{base: "100%", md: "50%", lg: "30%"}} InputLeftElement={<Icon as={<MaterialIcons name="lock" />} size={5} ml="3" color="#bebebe" />} />
+                    <Input ref={senhaRef} onKeyPress={(e) => handleKeyPress(e, null)} value={senha} type={"password"} placeholder="Insira sua senha..." onChangeText={novaSenha => setSenha(novaSenha)} backgroundColor={"white"} size={"xl"} w={{base: "100%", md: "50%", lg: "30%"}} InputLeftElement={<Icon as={<MaterialIcons name="lock" />} size={5} ml="3" color="#bebebe" />} />
                 </FormControl>
                 <Button size={"lg"} mb={4} mt={4} w={{base: "100%", md: "50%", lg: "30%"}} backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}} onPress={validarLogin}>Entrar</Button>
                 <Pressable onPress={() => setShowModal(true)} marginBottom={50}>

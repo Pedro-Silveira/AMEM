@@ -72,7 +72,7 @@ const Navbar = () => {
             </Box>
             <Popover trigger={triggerProps => {
                 return <Pressable {...triggerProps} colorScheme="danger">
-                    {dados.length != 0 ? <Badge colorScheme="danger" rounded="full" mb={-4} mr={-4} zIndex={1} variant="solid" alignSelf="flex-end">{dados.length}</Badge> : ""}
+                    {dados.length != 0 ? <Badge colorScheme="danger" rounded="full" mb={-4} mr={-4} zIndex={1} variant="solid" alignSelf="flex-end">{dados.length}</Badge> : null}
                     <Icon as={<MaterialIcons name={"notifications"} />} size={6} color={dados.length > 0 ? "#F7C300" : "#bebebe"} />
                 </Pressable>;
             }}>
@@ -81,16 +81,16 @@ const Navbar = () => {
                     <Popover.CloseButton />
                     <Popover.Header>Notificações</Popover.Header>
                     <Popover.Body pb={0}>
-                        {dados.length != 0 ? dados.map((item: any, index: any) => (
-                            <Box>
-                                <Box flexDir={"row"} alignItems={"center"}>
-                                    <Badge colorScheme="danger" rounded="full" p={1} mr={2} variant="solid" />
-                                    <Text bold>{item.nome}</Text>
-                                </Box>
-                                <Text mb={3}>{calcularDias(item.data)}</Text>
-                                <Divider mb={3} />
+                    {dados.length !== 0 ? dados.map((item: any) => (
+                        <Box key={item.id}>
+                            <Box flexDir={"row"} alignItems={"center"}>
+                                <Badge colorScheme="danger" rounded="full" p={1} mr={2} variant="solid" />
+                                <Text bold>{item.nome}</Text>
                             </Box>
-                        )) : <Text mb={3}>Não há notificações.</Text>}
+                            <Text mb={3}>{calcularDias(item.data)}</Text>
+                            <Divider mb={3} />
+                        </Box>
+                    )) : <Text mb={3}>Não há notificações.</Text>}
                     </Popover.Body>
                 </Popover.Content>
             </Popover> 

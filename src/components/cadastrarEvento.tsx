@@ -7,6 +7,7 @@ import { ref, push, onValue } from "firebase/database";
 import showToast from "../util/showToast";
 import { MaterialIcons } from '@expo/vector-icons';
 import errorTranslate from "../util/errorTranslate";
+import sendMail from "../util/sendMail";
 
 const styles = StyleSheet.create({
     boxCentral: {
@@ -21,7 +22,7 @@ const styles = StyleSheet.create({
     }
 });
 
-const cadastrarEvento = () => {
+const CadastrarEvento = () => {
     const [nome, setNome] = useState('');
     const [data, setData] = useState('');
     const [local, setLocal] = useState('');
@@ -189,6 +190,7 @@ const cadastrarEvento = () => {
             observacoes: observacoes,
             status: "Planejado"
         }).then(() => {
+            sendMail(usuarios, "Novo Evento: " + nome, "Olá, Prezado(s)! \n\nA pastoral universitária informa que o evento " + nome + " está sendo planejado para ocorrer no dia " + data + ". Sendo assim, solicitamos a provisão dos seguintes recursos:\n\nLocal do evento: " + local + "\nInvestimento Inicial: " + investimento + "\nObservações: " + observacoes + "\n\nAguardo retorno!");
             showToast(toast, "#404040", "O evento foi cadastrado com sucesso!");
             navigation.navigate("Controle de Eventos - AMEM" as never);
         }).catch((error) => {
@@ -277,7 +279,6 @@ const cadastrarEvento = () => {
                             w="100%" 
                             h={100} 
                             autoCompleteType={undefined}
-                            onKeyPress={(e) => handleKeyPress(e, null)}
                         />
                         {'observacoes' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.observacoes}</FormControl.ErrorMessage> : ''
@@ -288,7 +289,7 @@ const cadastrarEvento = () => {
                         <Box flexDir={"row"} mb={2}>
                             <Input flex={2} mr={2} backgroundColor={"white"} InputRightElement={<Icon as={MaterialIcons} name="search" color={"#bebebe"} mr={2} />} value={filtroUsuario} onChangeText={(text) => setFiltroUsuario(text)} placeholder="Filtrar pelo nome/e-mail..." size="md"/>
                             <Tooltip label="Limpar filtros" openDelay={500}>
-                                <Button onPress={limparFiltros} leftIcon={<Icon as={MaterialIcons} name="restart-alt" />} h={35} size={"sm"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} />
+                                <Button onPress={limparFiltros} leftIcon={<Icon as={MaterialIcons} name="restart-alt" />} size={"sm"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} />
                             </Tooltip>
                         </Box>
                         {buscarUsuarios()}
@@ -303,4 +304,4 @@ const cadastrarEvento = () => {
     );
 };
 
-export default cadastrarEvento;
+export default CadastrarEvento;
