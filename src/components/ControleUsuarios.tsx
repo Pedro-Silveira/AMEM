@@ -1,22 +1,31 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, Divider, HStack, Icon, Input, Pressable, ScrollView, Select, Spacer, Text, Tooltip, VStack } from "native-base";
 import { StyleSheet } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { Box, Button, Divider, HStack, Icon, Input, Pressable, ScrollView, Skeleton, Text, Tooltip, VStack } from "native-base";
 import { onValue, ref } from "firebase/database";
 import { db } from "../services/firebaseConfig";
+import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 
 const ControleUsuarios = () => {
+    // Fixas
     const navigation = useNavigation<any>();
+
+    // Variáveis
+    const [carregando, setCarregando] = useState(true);
     const [dados, setDados] = useState<any>([]);
+
+    // Gets & Sets
     const [filtroUsuario, setFiltroUsuario] = useState("");
 
+    // Limpa os campos de filtro.
     const limparFiltros = () => {
         setFiltroUsuario("");
     };
 
+    // Busca os usuários no banco de dados.
     useEffect(() => {
         const query = ref(db, "usuarios/");
+        
         onValue(query, (snapshot) => {
             const data = snapshot.val();
 
@@ -47,6 +56,8 @@ const ControleUsuarios = () => {
             } else {
                 setDados([]);
             }
+
+            setCarregando(false);
         });
     }, [filtroUsuario]);
 
@@ -54,43 +65,38 @@ const ControleUsuarios = () => {
         <ScrollView contentContainerStyle={{width:'100%'}}>
             <Box style={styles.boxCentral}>
                 <Box style={styles.box1}>
-                    <Text textAlign={"left"} bold fontSize={"3xl"}>Controle de Usuários</Text>
+                    <Text bold fontSize={"3xl"} textAlign={"left"}>Controle de Usuários</Text>
                     <Divider mt={2} mb={4}/>
                     <Box flexDirection={"row"}>
                         <Button onPress={() => navigation.navigate("Cadastrar Usuário - AMEM")} leftIcon={<Icon as={MaterialIcons} name="add" />} size={"sm"} backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}}>Cadastrar Usuário</Button>
                     </Box>
                 </Box>
                 <Box flexDir={"row"} mb={2}>
-                    <Input flex={2} mr={2} backgroundColor={"white"} InputRightElement={<Icon as={MaterialIcons} name="search" color={"#bebebe"} mr={2} />} value={filtroUsuario} onChangeText={(text) => setFiltroUsuario(text)} placeholder="Filtrar pelo nome/e-mail..." size="md"/>
+                <Input value={filtroUsuario} onChangeText={(text) => setFiltroUsuario(text)} InputRightElement={<Icon as={MaterialIcons} name="search" color={"#bebebe"} mr={2} />} flex={2} size={"md"} placeholder={"Filtrar pelo nome/e-mail..."} mr={2} backgroundColor={"white"} />
                     <Tooltip label="Limpar filtros" openDelay={500}>
                         <Button onPress={limparFiltros} leftIcon={<Icon as={MaterialIcons} name="restart-alt" />} size={"sm"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} />
                     </Tooltip>
                 </Box>
-                <Box borderWidth={1} borderColor={"#D4D4D4"} backgroundColor={"#fff"} rounded={5} marginBottom={25}>
+                <Box backgroundColor={"#fff"} borderWidth={1} borderColor={"#D4D4D4"} rounded={5} marginBottom={25}>
                     {dados.length !== 0 ? dados.map((item: any, index: any) => (
                         <Pressable key={index} onPress={() => navigation.navigate("Detalhes do Usuário - AMEM", { usuario: item })}>
                             {({
                                 isHovered
                             }) => {
                                 return (
-                                    <Box bg={isHovered ? "coolGray.100" : null} rounded={isHovered ? 5 : 0} key={index} borderBottomWidth={1} borderBottomColor={"#D4D4D4"} py="2" pl="4" pr={5}>
-                                        <HStack space={[2, 3]} justifyContent="space-between" alignItems={"center"}>
+                                    <Box key={index} bg={isHovered ? "coolGray.100" : null} rounded={isHovered ? 5 : 0} borderBottomWidth={1} borderBottomColor={"#D4D4D4"} py={2} pl={4} pr={5}>
+                                        <HStack space={[2, 3]} justifyContent={"space-between"} alignItems={"center"}>
                                             <VStack>
-                                            <Text bold>
-                                                {item.nome}
-                                            </Text>
-                                            <Text>
-                                                {item.email}
-                                            </Text>
+                                            <Text bold>{item.nome}</Text>
+                                            <Text>{item.email}</Text>
                                             </VStack>
-                                            <Spacer />
                                             {item.permissao == "administrador" ? <Icon as={<FontAwesome5 name={"user-tie"} />} size={5} color="#bebebe" /> : item.permissao == "editor" ? <Icon as={<FontAwesome5 name={"user-edit"} />} size={5} color="#bebebe" /> : <Icon as={<FontAwesome5 name={"user"} />} size={5} color="#bebebe" />}
                                         </HStack>
                                     </Box>
                                 );
                             }}
                         </Pressable>
-                    )) : <Text py="2" px="4">Não há usuários.</Text>}
+                    )) : carregando ? <Skeleton.Text lines={2} p={4} /> : <Text py={2} px={4}>Não há usuários.</Text> }
                 </Box>
             </Box>
         </ScrollView>

@@ -1,12 +1,13 @@
 import React, { useRef, useState } from "react";
 import { StyleSheet } from "react-native";
-import { Box, Button, CheckIcon, FormControl, Icon, Input, Pressable, ScrollView, Select, Text, useToast, WarningOutlineIcon } from "native-base";
+import { AlertDialog, Box, Button, CheckIcon, FormControl, Icon, Input, Pressable, ScrollView, Select, Spinner, Text, useToast, WarningOutlineIcon } from "native-base";
 import { useNavigation } from "@react-navigation/native";
 import { db } from "../services/firebaseConfig";
 import { ref, push } from "firebase/database";
 import { MaterialIcons } from '@expo/vector-icons';
 import showToast from "../util/showToast";
 import errorTranslate from "../util/errorTranslate";
+import showLoading from "../util/showLoading";
 
 const styles = StyleSheet.create({
     boxCentral: {
@@ -31,6 +32,7 @@ const RegistrarDoacao = ({ route }: { route: any }) => {
     const [erros, setErros] = useState({});
     const navigation = useNavigation<any>();
     const toast = useToast();
+    const [uploading, setUploading] = useState(false);
 
     const tipoRef = useRef(null);
     const organizacaoRef = useRef(null);
@@ -62,6 +64,7 @@ const RegistrarDoacao = ({ route }: { route: any }) => {
         const quantidadeRegex = new RegExp(/^\d+$/);
         let erros = 0;
 
+        setUploading(true);
         setErros({});
 
         if (tipo != "recebida" && tipo != "efetuada"){
@@ -126,11 +129,14 @@ const RegistrarDoacao = ({ route }: { route: any }) => {
             navigation.navigate("Detalhes do Evento - AMEM", { evento: evento });
         }).catch((error) => {
             showToast(toast, "#E11D48", errorTranslate(error));
+        }).finally(() => {
+            setUploading(false);
         });
     };
 
     return (
         <ScrollView contentContainerStyle={{width:'100%'}}>
+            {showLoading(uploading, () => setUploading(false))}
             <Box style={styles.boxCentral}>
                 <Box style={styles.box1}>
                     <Pressable style={styles.box2} onPress={() => navigation.navigate("Detalhes do Evento - AMEM", { evento: evento })}>
@@ -154,7 +160,7 @@ const RegistrarDoacao = ({ route }: { route: any }) => {
                             <Select.Item label="Recebida" value="recebida" />
                             <Select.Item label="Efetuada" value="efetuada" />
                         </Select>
-                        {'tipo' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.tipo}</FormControl.ErrorMessage> : ''}
+                        {'tipo' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.tipo}</FormControl.ErrorMessage> : null}
                     </FormControl>
                     <FormControl isRequired isInvalid={'organizacao' in erros}>
                         <FormControl.Label>Organização:</FormControl.Label>
@@ -167,7 +173,7 @@ const RegistrarDoacao = ({ route }: { route: any }) => {
                             size={"lg"}
                             onKeyPress={(e) => handleKeyPress(e, materialRef)}
                         />
-                        {'organizacao' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.organizacao}</FormControl.ErrorMessage> : ''}
+                        {'organizacao' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.organizacao}</FormControl.ErrorMessage> : null}
                     </FormControl>
                     <FormControl isRequired isInvalid={'material' in erros}>
                         <FormControl.Label>Material:</FormControl.Label>
@@ -180,7 +186,7 @@ const RegistrarDoacao = ({ route }: { route: any }) => {
                             size={"lg"}
                             onKeyPress={(e) => handleKeyPress(e, quantidadeRef)}
                         />
-                        {'material' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.material}</FormControl.ErrorMessage> : ''}
+                        {'material' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.material}</FormControl.ErrorMessage> : null}
                     </FormControl>
                     <FormControl isRequired isInvalid={'quantidade' in erros}>
                         <FormControl.Label>Quantidade:</FormControl.Label>
@@ -193,7 +199,7 @@ const RegistrarDoacao = ({ route }: { route: any }) => {
                             size={"lg"}
                             onKeyPress={(e) => handleKeyPress(e, unidadeRef)}
                         />
-                        {'quantidade' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.quantidade}</FormControl.ErrorMessage> : ''}
+                        {'quantidade' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.quantidade}</FormControl.ErrorMessage> : null}
                     </FormControl>
                     <FormControl isRequired isInvalid={'unidade' in erros}>
                         <FormControl.Label>Unidade de Medida:</FormControl.Label>
@@ -217,7 +223,7 @@ const RegistrarDoacao = ({ route }: { route: any }) => {
                             <Select.Item label="Rolo" value="rol." />
                             <Select.Item label="Unidade" value="un." />
                         </Select>
-                        {'unidade' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.unidade}</FormControl.ErrorMessage> : ''}
+                        {'unidade' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.unidade}</FormControl.ErrorMessage> : null}
                     </FormControl>
                 </Box>
                 <Box flexDirection={"row"}>

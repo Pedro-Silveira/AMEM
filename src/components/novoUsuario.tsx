@@ -8,6 +8,7 @@ import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { MaterialIcons } from '@expo/vector-icons';
 import showToast from "../util/showToast";
 import errorTranslate from "../util/errorTranslate";
+import showLoading from "../util/showLoading";
 
 const NovoUsuario = () => {
     const [nome, setNome] = useState('');
@@ -16,9 +17,9 @@ const NovoUsuario = () => {
     const [senhaRepeticao, setSenhaRepeticao] = useState('');
     const [permissao, setPermissao] = useState('');
     const [erros, setErros] = useState({});
-    const navigation = useNavigation();
+    const navigation = useNavigation<any>();
     const toast = useToast();
-    const logina = auth;
+    const [uploading, setUploading] = useState(false);
 
     const nomeRef = useRef(null);
     const emailRef = useRef(null);
@@ -103,38 +104,48 @@ const NovoUsuario = () => {
         }
     };
 
-    const handleSignin = async () => {
-        await createUserWithEmailAndPassword(logina, email, senha)
+    const handleSignin = () => {
+        setUploading(true);
+
+        createUserWithEmailAndPassword(auth, email, senha)
         .then(() => {
-            if(auth.currentUser){
+            if (auth.currentUser) {
                 updateProfile(auth.currentUser, {
                     displayName: nome
-                }).finally(() =>{
+                }).then(() =>{
                     set(ref(db, 'usuarios/' + auth.currentUser?.uid), {
                         nome: nome,
                         email: email,
                         permissao: permissao
                     }).then(() => {
                         showToast(toast, "#404040", "O usuário foi cadastrado com sucesso!");
-                        navigation.navigate("Controle de Eventos - AMEM" as never);
+                        navigation.navigate("Controle de Eventos - AMEM");
                     }).catch((error) => {
                         showToast(toast, "#E11D48", errorTranslate(error));
+                    }).finally(() => {
+                        setUploading(false);
                     });
                 }).catch((error) => {
                     showToast(toast, "#E11D48", errorTranslate(error));
+                    setUploading(false);
                 });
+            } else {
+                showToast(toast, "#E11D48", errorTranslate(null));
+                setUploading(false);
             }
         })
         .catch((error) => {
             showToast(toast, "#E11D48", errorTranslate(error));
+            setUploading(false);
         });
     };
 
     return(
         <ScrollView contentContainerStyle={{width:'100%'}}>
+            {showLoading(uploading, () => setUploading(false))}
             <Box style={styles.boxCentral}>
                 <Box style={styles.box1}>
-                    <Pressable style={styles.box2} onPress={() => navigation.navigate("Controle de Usuários - AMEM" as never)}>
+                    <Pressable style={styles.box2} onPress={() => navigation.navigate("Controle de Usuários - AMEM")}>
                         <Icon as={MaterialIcons} name="navigate-before" size={25} color={"#818181"} />
                         <Text textAlign={"left"} bold fontSize={"3xl"}>Cadastrar Usuário</Text>
                     </Pressable>
@@ -153,7 +164,7 @@ const NovoUsuario = () => {
                             onKeyPress={(e) => handleKeyPress(e, emailRef)}
                         />
                         {'nome' in erros ?
-                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.nome}</FormControl.ErrorMessage>: ''
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.nome}</FormControl.ErrorMessage>: null
                         }
                     </FormControl>
                     <FormControl isRequired isInvalid={'email' in erros}>
@@ -168,7 +179,7 @@ const NovoUsuario = () => {
                             onKeyPress={(e) => handleKeyPress(e, senhaRef)}
                         />
                         {'email' in erros ?
-                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.email}</FormControl.ErrorMessage>: ''
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.email}</FormControl.ErrorMessage>: null
                         }
                     </FormControl>
                     <FormControl isRequired isInvalid={'senha' in erros}>
@@ -184,7 +195,7 @@ const NovoUsuario = () => {
                             onKeyPress={(e) => handleKeyPress(e, senhaRepeticaoRef)}
                         />
                         {'senha' in erros ?
-                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.senha}</FormControl.ErrorMessage>: ''
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.senha}</FormControl.ErrorMessage>: null
                         }
                     </FormControl>
                     <FormControl isRequired isInvalid={'senhaRepeticao' in erros}>
@@ -200,7 +211,7 @@ const NovoUsuario = () => {
                             onKeyPress={(e) => handleKeyPress(e, permissaoRef)}
                         />
                         {'senhaRepeticao' in erros ?
-                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.senhaRepeticao}</FormControl.ErrorMessage>: ''
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.senhaRepeticao}</FormControl.ErrorMessage>: null
                         }
                     </FormControl>
                     <FormControl isRequired isInvalid={'permissao' in erros}>
@@ -219,7 +230,7 @@ const NovoUsuario = () => {
                             <Select.Item label="Administrador" value="administrador" />
                         </Select>
                         {'permissao' in erros ?
-                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.permissao}</FormControl.ErrorMessage> : ''
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.permissao}</FormControl.ErrorMessage> : null
                         }
                     </FormControl>
                 </Box>

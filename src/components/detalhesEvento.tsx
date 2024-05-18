@@ -1,44 +1,54 @@
 import React, { useEffect, useState } from "react";
-import { AlertDialog, Box, Button, Divider, FormControl, HStack, Icon, Input, Pressable, ScrollView, Select, Spacer, Text, TextArea, Tooltip, useToast, VStack, WarningOutlineIcon } from "native-base";
 import { StyleSheet } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { AlertDialog, Box, Button, Divider, FormControl, HStack, Icon, Input, Pressable, ScrollView, Select, Skeleton, Text, TextArea, Tooltip, useToast, VStack, WarningOutlineIcon } from "native-base";
 import { onValue, ref, remove, update } from "firebase/database";
-import { auth, db } from "../services/firebaseConfig";
+import { db } from "../services/firebaseConfig";
+import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from '@expo/vector-icons';
 import showToast from "../util/showToast";
 import errorTranslate from "../util/errorTranslate";
 import useUserPermission from "../util/getPermission";
+import showLoading from "../util/showLoading";
 
 const DetalhesEvento = ({ route }: { route: any }) => {
+    // Fixas
     const { evento } = route.params;
+    const navigation = useNavigation<any>();
     const userPermission = useUserPermission();
+    const toast = useToast();
+
+    // Variáveis
+    const [erros, setErros] = useState({});
+    const [carregandoDoacoes, setCarregandoDoacoes] = useState(true);
+    const [carregandoVoluntarios, setCarregandoVoluntarios] = useState(true);
+    const [uploading, setUploading] = useState(false);
+    const [isOpen, setIsOpen] = React.useState(false);
+    const [isOpen2, setIsOpen2] = React.useState(false);
+
+    // Gets & Sets
     const [nome, setNome] = useState(evento.nome);
     const [data, setData] = useState(evento.data);
     const [local, setLocal] = useState(evento.local);
     const [investimento, setInvestimento] = useState(evento.investimento);
     const [observacoes, setObservacoes] = useState(evento.observacoes);
-    const [erros, setErros] = useState({});
-    const navigation = useNavigation<any>();
     const [dadosDoacoes, setDoacoes] = useState<any>([]);
     const [dadosVoluntarios, setVoluntarios] = useState<any>([]);
     const [filtroDoacao, setFiltroDoacao] = useState("");
     const [filtroTipo, setFiltroTipo] = useState("");
-    const [filtroVoluntario, setFiltroVoluntario] = useState("");
-    const toast = useToast();
-    const [isOpen, setIsOpen] = React.useState(false);
-    const [isOpen2, setIsOpen2] = React.useState(false);
-    const cancelRef = React.useRef(null);
-    const cancelRef2 = React.useRef(null);
+    const [filtroVoluntario, setFiltroVoluntario] = useState("");    
 
+    // Limpa os campos de filtro das doações.
     const limparFiltrosDoacao = () => {
         setFiltroDoacao("");
         setFiltroTipo("");
     };
 
+    // Limpa os campos de filtro dos usuários.
     const limparFiltrosVoluntario = () => {
         setFiltroVoluntario("");
     };
 
+    // Busca e armazena os registros de doações.
     useEffect(() => {
         const queryDoacoes = ref(db, "eventos/" + evento.id + "/doacoes/");
 
@@ -59,9 +69,12 @@ const DetalhesEvento = ({ route }: { route: any }) => {
             } else {
                 setDoacoes([]);
             }
+
+            setCarregandoDoacoes(false);
         });
     }, [filtroDoacao, filtroTipo]);
 
+    // Busca e armazena os registros de voluntários.
     useEffect(() => {
         const queryVoluntarios = ref(db, "eventos/" + evento.id + "/voluntarios/");
 
@@ -80,11 +93,15 @@ const DetalhesEvento = ({ route }: { route: any }) => {
             } else {
                 setVoluntarios([]);
             }
+
+            setCarregandoVoluntarios(false);
         });
     }, [filtroVoluntario]);
 
     // Remove o registro do banco de dados.
     const excluirEvento = () => {
+        setUploading(true);
+
         remove(ref(db, 'eventos/' + evento.id))
         .then(() => {
             showToast(toast, "#404040", "O evento foi excluído com sucesso!");
@@ -92,6 +109,8 @@ const DetalhesEvento = ({ route }: { route: any }) => {
         })
         .catch((error) => {
             showToast(toast, "#E11D48", errorTranslate(error));
+        }).finally(() => {
+            setUploading(false);
         });
     };
 
@@ -147,51 +166,63 @@ const DetalhesEvento = ({ route }: { route: any }) => {
 
     // Adiciona o registro no banco de dados.
     const editarEvento = () => {
+        setUploading(true);
+
         update(ref(db, 'eventos/' + evento.id), {
             nome: nome,
             data: data,
             local: local,
             investimento: investimento,
-            observacoes: observacoes,
-            status: "Planejado"
+            observacoes: observacoes
         }).then(() => {
             showToast(toast, "#404040", "O evento foi editado com sucesso!");
-            navigation.navigate("Controle de Eventos - AMEM" as never);
+            navigation.navigate("Controle de Eventos - AMEM");
         }).catch((error) => {
             showToast(toast, "#E11D48", errorTranslate(error));
+        }).finally(() => {
+            setUploading(false);
         });
     };
 
-    // Muda o status do evento no banco de dados.
+    // Muda o status do evento para encerrado no banco de dados.
     const encerrarEvento = () => {
+        setUploading(true);
+
         if(evento.status != "Encerrado"){
             update(ref(db, 'eventos/' + evento.id), {
                 status: "Encerrado"
             }).then(() => {
                 showToast(toast, "#404040", "O evento foi encerrado com sucesso!");
-                navigation.navigate("Controle de Eventos - AMEM" as never);
+                navigation.navigate("Controle de Eventos - AMEM");
             }).catch((error) => {
                 showToast(toast, "#E11D48", errorTranslate(error));
+            }).finally(() => {
+                setUploading(false);
             });
         } else {
             setIsOpen2(!isOpen2);
-        }        
+        }
     };
 
-    // Muda o status do evento no banco de dados.
+    // Muda o status do evento para planejado no banco de dados.
     const ativarEvento = () => {
+        setUploading(true);
+
         update(ref(db, 'eventos/' + evento.id), {
             status: "Planejado"
         }).then(() => {
             showToast(toast, "#404040", "O evento foi redefinido como planejado!");
-            navigation.navigate("Controle de Eventos - AMEM" as never);
+            navigation.navigate("Controle de Eventos - AMEM");
         }).catch((error) => {
             showToast(toast, "#E11D48", errorTranslate(error));
-        });      
+        }).finally(() => {
+            setUploading(false);
+        });
     };
 
     return(
         <ScrollView contentContainerStyle={{width:'100%'}}>
+            {showLoading(uploading, () => setUploading(false))}
             <Box style={styles.boxCentral}>
                 <Box style={styles.box1}>
                     <Pressable style={styles.box3} onPress={() => navigation.navigate("Controle de Eventos - AMEM")}>
@@ -204,96 +235,91 @@ const DetalhesEvento = ({ route }: { route: any }) => {
                         <FormControl.Label>Nome:</FormControl.Label>
                         <Input value={nome} placeholder="Ex.: Ação de Graças" onChangeText={novoNome => setNome(novoNome)} backgroundColor={"white"} size={"lg"} />
                         {'nome' in erros ?
-                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.nome}</FormControl.ErrorMessage>: ''
-                        }
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.nome}</FormControl.ErrorMessage>
+                        : null }
                     </FormControl>
                     <FormControl isRequired isInvalid={'data' in erros}>
                         <FormControl.Label>Data:</FormControl.Label>
                         <Input value={data} placeholder="Ex.: 02/08/1972" onChangeText={novaData => setData(novaData)} backgroundColor={"white"} size={"lg"}/>
                         {'data' in erros ?
-                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.data}</FormControl.ErrorMessage>: ''
-                        }
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.data}</FormControl.ErrorMessage>
+                        : null}
                     </FormControl>
                     <FormControl isRequired isInvalid={'local' in erros}>
                         <FormControl.Label>Local:</FormControl.Label>
                         <Input value={local} placeholder="Ex.: Capela São José" onChangeText={novoLocal => setLocal(novoLocal)} backgroundColor={"white"} size={"lg"}/>
                         {'local' in erros ?
-                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.local}</FormControl.ErrorMessage>: ''
-                        }
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.local}</FormControl.ErrorMessage>
+                        : null }
                     </FormControl>
                     <FormControl isRequired isInvalid={'investimento' in erros}>
                         <FormControl.Label>Investimento:</FormControl.Label>
                         <Input value={investimento} placeholder="Ex.: 1.080,00" onChangeText={novoInvestimento => setInvestimento(novoInvestimento)} backgroundColor={"white"} size={"lg"}/>
                         {'investimento' in erros ?
-                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.investimento}</FormControl.ErrorMessage>: ''
-                        }
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.investimento}</FormControl.ErrorMessage>
+                        : null }
                     </FormControl>
                     <FormControl isInvalid={'observacoes' in erros}>
                         <FormControl.Label>Observações:</FormControl.Label>
                         <TextArea value={observacoes} onChangeText={novaObservacao => setObservacoes(novaObservacao)} backgroundColor={"white"} w="100%" h={100} autoCompleteType={undefined} />
                         {'observacoes' in erros ?
-                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.observacoes}</FormControl.ErrorMessage> : ''
-                        }
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.observacoes}</FormControl.ErrorMessage>
+                        : null }
                     </FormControl>
                     {userPermission == "editor" && evento.status != "Encerrado" || userPermission == "administrador" ? 
-                    <Box flexDirection={"row"} mt={25}>
-                        {userPermission == "administrador" ? 
-                        <Tooltip label="Excluir" openDelay={500}>
-                            <Button onPress={() => setIsOpen(!isOpen)} marginRight={2} leftIcon={<Icon as={MaterialIcons} name="delete"/>} size={"sm"} backgroundColor={"#E11D48"} _hover={{backgroundColor: "#BE123C"}}>Excluir</Button>
-                        </Tooltip>
-                        : null }
-                        <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={() => setIsOpen(false)}>
-                            <AlertDialog.Content>
-                            <AlertDialog.CloseButton />
-                            <AlertDialog.Header>Excluir Evento</AlertDialog.Header>
-                            <AlertDialog.Body>
-                                Você tem certeza que deseja excluir o evento? Esta ação não poderá ser revertida.
-                            </AlertDialog.Body>
-                            <AlertDialog.Footer>
-                                <Button.Group space={2}>
-                                <Button variant="ghost" colorScheme="coolGray" onPress={() => setIsOpen(false)} ref={cancelRef}>
-                                    Cancelar
-                                </Button>
-                                <Button colorScheme="danger" onPress={excluirEvento}>
-                                    Excluir
-                                </Button>
-                                </Button.Group>
-                            </AlertDialog.Footer>
-                            </AlertDialog.Content>
-                        </AlertDialog>
-                        <Tooltip label="Salvar" openDelay={500}>
+                        <Box flexDirection={"row"} mt={25}>
+                            {userPermission == "administrador" ? 
+                                <Button onPress={() => setIsOpen(!isOpen)} marginRight={2} leftIcon={<Icon as={MaterialIcons} name="delete"/>} size={"sm"} backgroundColor={"#E11D48"} _hover={{backgroundColor: "#BE123C"}}>Excluir</Button>
+                            : null }
+                            <AlertDialog leastDestructiveRef={React.useRef(null)} isOpen={isOpen} onClose={() => setIsOpen(false)}>
+                                <AlertDialog.Content>
+                                <AlertDialog.CloseButton />
+                                <AlertDialog.Header>Excluir Evento</AlertDialog.Header>
+                                <AlertDialog.Body>
+                                    Você tem certeza que deseja excluir o evento? Esta ação não poderá ser revertida.
+                                </AlertDialog.Body>
+                                <AlertDialog.Footer>
+                                    <Button.Group space={2}>
+                                    <Button variant="ghost" colorScheme="coolGray" onPress={() => setIsOpen(false)} ref={React.useRef(null)}>
+                                        Cancelar
+                                    </Button>
+                                    <Button colorScheme="danger" onPress={excluirEvento}>
+                                        Excluir
+                                    </Button>
+                                    </Button.Group>
+                                </AlertDialog.Footer>
+                                </AlertDialog.Content>
+                            </AlertDialog>
                             <Button onPress={validarEvento} marginRight={2} leftIcon={<Icon as={MaterialIcons} name="save" />} size={"sm"} backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}}>Salvar</Button>
-                        </Tooltip>
-                        <Tooltip label="Encerrar" openDelay={500}>
                             <Button onPress={encerrarEvento} marginRight={2} leftIcon={<Icon as={MaterialIcons} name="done" />} size={"sm"} backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}}>Encerrar</Button>
-                        </Tooltip>
-                        <AlertDialog leastDestructiveRef={cancelRef2} isOpen={isOpen2} onClose={() => setIsOpen2(false)}>
-                            <AlertDialog.Content>
-                            <AlertDialog.CloseButton />
-                            <AlertDialog.Header>Planejar Evento</AlertDialog.Header>
-                            <AlertDialog.Body>
-                                Este evento está definido como encerrado. Você deseja defini-lo como planejado novamente?
-                            </AlertDialog.Body>
-                            <AlertDialog.Footer>
-                                <Button.Group space={2}>
-                                <Button variant="ghost" colorScheme="coolGray" onPress={() => setIsOpen2(false)} ref={cancelRef2}>
-                                    Cancelar
-                                </Button>
-                                <Button backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}} onPress={ativarEvento}>
-                                    Definir
-                                </Button>
-                                </Button.Group>
-                            </AlertDialog.Footer>
-                            </AlertDialog.Content>
-                        </AlertDialog>
-                    </Box> : null}
+                            <AlertDialog leastDestructiveRef={React.useRef(null)} isOpen={isOpen2} onClose={() => setIsOpen2(false)}>
+                                <AlertDialog.Content>
+                                <AlertDialog.CloseButton />
+                                <AlertDialog.Header>Planejar Evento</AlertDialog.Header>
+                                <AlertDialog.Body>
+                                    Este evento está definido como encerrado. Você deseja defini-lo como planejado novamente?
+                                </AlertDialog.Body>
+                                <AlertDialog.Footer>
+                                    <Button.Group space={2}>
+                                    <Button variant="ghost" colorScheme="coolGray" onPress={() => setIsOpen2(false)} ref={React.useRef(null)}>
+                                        Cancelar
+                                    </Button>
+                                    <Button backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}} onPress={ativarEvento}>
+                                        Definir
+                                    </Button>
+                                    </Button.Group>
+                                </AlertDialog.Footer>
+                                </AlertDialog.Content>
+                            </AlertDialog>
+                        </Box>
+                    : userPermission ? null : <Skeleton rounded="5" mt={25} /> }
                 </Box>
                 <Box style={styles.box1}>
                     <Text textAlign={"left"} bold fontSize={"xl"}>Doações</Text>
-                    <Divider mt={2} mb={4}/>
+                    <Divider mt={2}/>
                     {userPermission == "editor" && evento.status != "Encerrado" || userPermission == "administrador" ? 
-                        <Button onPress={() => navigation.navigate("Registrar Doação - AMEM", { evento: evento })} leftIcon={<Icon as={MaterialIcons} name="add" />} size={"sm"} backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}}>Registrar Doação</Button>
-                    : null }
+                        <Button onPress={() => navigation.navigate("Registrar Doação - AMEM", { evento: evento })} mt={4} leftIcon={<Icon as={MaterialIcons} name="add" />} size={"sm"} backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}}>Registrar Doação</Button>
+                    : userPermission ? null : <Skeleton rounded="5" mt={4} /> }
                 </Box>
                 <Box flexDir={"row"} mb={2}>
                     <Input flex={2} mr={2} backgroundColor={"white"} InputRightElement={<Icon as={MaterialIcons} name="search" color={"#bebebe"} mr={2} />} value={filtroDoacao} onChangeText={(text) => setFiltroDoacao(text)} placeholder="Filtrar pelo material/organização..." size="md"/>
@@ -316,28 +342,23 @@ const DetalhesEvento = ({ route }: { route: any }) => {
                                     <Box bg={isHovered ? "coolGray.100" : null} rounded={isHovered ? 5 : 0} key={index} borderBottomWidth={1} borderBottomColor={"#D4D4D4"} py="2" pl="4" pr={5}>
                                         <HStack space={[2, 3]} justifyContent="space-between" alignItems={"center"}>
                                             <VStack>
-                                                <Text bold>
-                                                    {item.organizacao}
-                                                </Text>
-                                                <Text> 
-                                                    {item.quantidade} {item.unidade} {item.material}.
-                                                </Text>
+                                                <Text bold>{item.organizacao}</Text>
+                                                <Text>{item.quantidade} {item.unidade} {item.material}.</Text>
                                             </VStack>
-                                            <Spacer />
                                             {item.tipo == "efetuada" ? <Icon as={<MaterialIcons name={"arrow-circle-right"} />} size={5} color="#E11D48" /> : <Icon as={<MaterialIcons name={"arrow-circle-left"} />} size={5} color="#16A34A" />}
                                         </HStack>
                                     </Box>
                                 );
                             }}
                         </Pressable>
-                    )) : <Text py="2" px="4">Não há doações.</Text>}
+                    )) : carregandoDoacoes ? <Skeleton.Text lines={2} p={4} /> : <Text py="2" px="4">Não há doações.</Text>}
                 </Box>
                 <Box style={styles.box1}>
                     <Text textAlign={"left"} bold fontSize={"xl"}>Voluntários</Text>
-                    <Divider mt={2} mb={4}/>
+                    <Divider mt={2}/>
                     {userPermission == "editor" && evento.status != "Encerrado" || userPermission == "administrador" ? 
-                        <Button onPress={() => navigation.navigate("Registrar Voluntário - AMEM", { evento: evento })} leftIcon={<Icon as={MaterialIcons} name="add" />} size={"sm"} backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}}>Registrar Voluntário</Button>
-                    : null }
+                        <Button onPress={() => navigation.navigate("Registrar Voluntário - AMEM", { evento: evento })} mt={4} leftIcon={<Icon as={MaterialIcons} name="add" />} size={"sm"} backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}}>Registrar Voluntário</Button>
+                    : userPermission ? null : <Skeleton rounded="5" mt={4} /> }
                 </Box>
                 <Box flexDir={"row"} mb={2}>
                     <Input flex={2} mr={2} backgroundColor={"white"} InputRightElement={<Icon as={MaterialIcons} name="search" color={"#bebebe"} mr={2} />} value={filtroVoluntario} onChangeText={(text) => setFiltroVoluntario(text)} placeholder="Filtrar pelo nome..." size="md"/>
@@ -355,21 +376,16 @@ const DetalhesEvento = ({ route }: { route: any }) => {
                                     <Box bg={isHovered ? "coolGray.100" : null} rounded={isHovered ? 5 : 0} key={index} borderBottomWidth={1} borderBottomColor={"#D4D4D4"} py="2" pl="4" pr={5}>
                                         <HStack space={[2, 3]} justifyContent="space-between" alignItems={"center"}>
                                             <VStack>
-                                                <Text bold>
-                                                    {item.nome}
-                                                </Text>
-                                                <Text >
-                                                    {item.horas} hora(s).
-                                                </Text>
+                                                <Text bold>{item.nome}</Text>
+                                                <Text >{item.horas} hora(s).</Text>
                                             </VStack>
-                                            <Spacer />
                                             <Icon as={<MaterialIcons name={"timer"} />} size={5} color="#bebebe" />
                                         </HStack>
                                     </Box>
                                 );
                             }}
                         </Pressable>
-                    )) : <Text py="2" px="4">Não há voluntários.</Text>}
+                    )) : carregandoVoluntarios ? <Skeleton.Text lines={2} p={4} /> : <Text py="2" px="4">Não há voluntários.</Text>}
                 </Box>
             </Box>
         </ScrollView>

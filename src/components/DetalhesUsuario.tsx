@@ -1,44 +1,29 @@
 import React, { useState } from "react";
 import { StyleSheet } from "react-native";
-import { AlertDialog, Box, Button, Divider, FormControl, Icon, Input, Pressable, ScrollView, Select, Text, useToast, WarningOutlineIcon } from "native-base";
-import { useNavigation } from "@react-navigation/native";
+import { AlertDialog, Box, Button, FormControl, Icon, Input, Pressable, ScrollView, Select, Text, useToast, WarningOutlineIcon } from "native-base";
 import { db } from "../services/firebaseConfig";
 import { ref, update, remove } from "firebase/database";
+import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from '@expo/vector-icons';
 import showToast from "../util/showToast";
 import errorTranslate from "../util/errorTranslate";
-
-const styles = StyleSheet.create({
-    boxCentral: {
-        padding: 50
-    },
-    box1: {
-        flexDirection: "row",
-        flexWrap: "wrap",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: 25
-    },
-    box2: {
-        marginBottom: 25
-    },
-    box3: {
-        flexDirection: "row",
-        alignItems: "center"
-    }
-});
+import showLoading from "../util/showLoading";
 
 const DetalhesUsuario = ({ route }: { route: any }) => {
+    // Fixas
     const { usuario } = route.params;
+    const navigation = useNavigation<any>();
+    const toast = useToast();
+
+    // Variáveis
+    const [uploading, setUploading] = useState(false);
+    const [erros, setErros] = useState({});
+    const [isOpen, setIsOpen] = React.useState(false);
+
+    // Gets & Sets
     const [nome, setNome] = useState(usuario.nome);
     const [email, setEmail] = useState(usuario.email);
     const [permissao, setPermissao] = useState(usuario.permissao);
-    const [erros, setErros] = useState({});
-    const navigation = useNavigation<any>();
-    const toast = useToast();
-    const [isOpen, setIsOpen] = React.useState(false);
-    const onClose = () => setIsOpen(false);
-    const cancelRef = React.useRef(null);
 
     // Valida os campos do formulário através de expressões regulares.
     const validarUsuario = () => {
@@ -60,20 +45,10 @@ const DetalhesUsuario = ({ route }: { route: any }) => {
         }
     };
 
-    // Remove o registro do banco de dados.
-    const excluirUsuario = () => {
-        remove(ref(db, 'usuarios/' + usuario.id))
-        .then(() => {
-            showToast(toast, "#404040", "O usuário foi excluído com sucesso!");
-            navigation.navigate("Controle de Usuários - AMEM");
-        })
-        .catch((error) => {
-            showToast(toast, "#E11D48", errorTranslate(error));
-        });
-    };
-
     // Adiciona o registro no banco de dados.
     const editarUsuario = () => {
+        setUploading(true);
+
         update(ref(db, 'usuarios/' + usuario.id), {
             permissao: permissao
         }).then(() => {
@@ -81,12 +56,31 @@ const DetalhesUsuario = ({ route }: { route: any }) => {
             navigation.navigate("Controle de Usuários - AMEM");
         }).catch((error) => {
             showToast(toast, "#E11D48", errorTranslate(error));
+        }).finally(() => {
+            setUploading(false);
+        });
+    };
+
+    // Remove o registro do banco de dados.
+    const excluirUsuario = () => {
+        setUploading(true);
+
+        remove(ref(db, 'usuarios/' + usuario.id))
+        .then(() => {
+            showToast(toast, "#404040", "O usuário foi excluído com sucesso!");
+            navigation.navigate("Controle de Usuários - AMEM");
+        })
+        .catch((error) => {
+            showToast(toast, "#E11D48", errorTranslate(error));
+        }).finally(() => {
+            setUploading(false);
         });
     };
 
     // Cria os elementos visuais em tela.
     return (
         <ScrollView contentContainerStyle={{width:'100%'}}>
+            {showLoading(uploading, () => setUploading(false))}
             <Box style={styles.boxCentral}>
                 <Box style={styles.box1}>
                     <Pressable style={styles.box3} onPress={() => navigation.navigate("Controle de Usuários - AMEM")}>
@@ -111,12 +105,12 @@ const DetalhesUsuario = ({ route }: { route: any }) => {
                             <Select.Item label="Administrador" value="administrador" />
                         </Select>
                         {'permissao' in erros ?
-                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.permissao}</FormControl.ErrorMessage> : ''
-                        }
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.permissao}</FormControl.ErrorMessage>
+                        : null }
                     </FormControl>
                     <Box flexDirection={"row"} mt={25}>
                         <Button onPress={() => setIsOpen(!isOpen)} marginRight={2} leftIcon={<Icon as={MaterialIcons} name="delete" />} size={"sm"} backgroundColor={"#E11D48"} _hover={{backgroundColor: "#BE123C"}}>Excluir</Button>
-                        <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
+                        <AlertDialog leastDestructiveRef={React.useRef(null)} isOpen={isOpen} onClose={() => setIsOpen(false)}>
                             <AlertDialog.Content>
                             <AlertDialog.CloseButton />
                             <AlertDialog.Header>Excluir Usuário</AlertDialog.Header>
@@ -125,7 +119,7 @@ const DetalhesUsuario = ({ route }: { route: any }) => {
                             </AlertDialog.Body>
                             <AlertDialog.Footer>
                                 <Button.Group space={2}>
-                                <Button variant="ghost" colorScheme="coolGray" onPress={onClose} ref={cancelRef}>
+                                <Button variant="ghost" colorScheme="coolGray" onPress={() => setIsOpen(false)} ref={React.useRef(null)}>
                                     Cancelar
                                 </Button>
                                 <Button colorScheme="danger" onPress={excluirUsuario}>
@@ -142,5 +136,25 @@ const DetalhesUsuario = ({ route }: { route: any }) => {
         </ScrollView>
     );
 };
+
+const styles = StyleSheet.create({
+    boxCentral: {
+        padding: 50
+    },
+    box1: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 25
+    },
+    box2: {
+        marginBottom: 25
+    },
+    box3: {
+        flexDirection: "row",
+        alignItems: "center"
+    }
+});
 
 export default DetalhesUsuario;

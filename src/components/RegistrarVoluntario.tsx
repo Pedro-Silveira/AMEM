@@ -1,13 +1,13 @@
 import React, { useRef, useState } from "react";
 import { StyleSheet } from "react-native";
-import { Box, Button, FormControl, Icon, Input, Pressable, ScrollView, Text, useToast, WarningOutlineIcon } from "native-base";
+import { AlertDialog, Box, Button, FormControl, Icon, Input, Pressable, ScrollView, Spinner, Text, useToast, WarningOutlineIcon } from "native-base";
 import { useNavigation } from "@react-navigation/native";
 import { db } from "../services/firebaseConfig";
 import { ref, push } from "firebase/database";
 import { MaterialIcons } from '@expo/vector-icons';
 import showToast from "../util/showToast";
-import testRegex from "../util/testRegex";
 import errorTranslate from "../util/errorTranslate";
+import showLoading from "../util/showLoading";
 
 const styles = StyleSheet.create({
     boxCentral: {
@@ -32,6 +32,7 @@ const RegistrarVoluntario = ({ route }: { route: any }) => {
     const [erros, setErros] = useState({});
     const navigation = useNavigation<any>();
     const toast = useToast();
+    const [uploading, setUploading] = useState(false);
 
     const nomeRef = useRef(null);
     const cursoRef = useRef(null);
@@ -59,11 +60,16 @@ const RegistrarVoluntario = ({ route }: { route: any }) => {
     };
 
     const validarVoluntario = () => {
+        const nomeRegex = new RegExp(/^[A-Za-zÀ-ú]+(?:\s[A-Za-zÀ-ú]+)*$/);
+        const cursoRegex = new RegExp(/^[^\s].*$/);
+        const telefoneRegex = new RegExp(/^\(\d{2}\) (9\d{4}-\d{4}|\d{4}-\d{4})$/);
+        const emailRegex = new RegExp(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/);
+        const horasRegex = new RegExp(/^\d+$/);
         let erros = 0;
 
         setErros({});
 
-        if (!testRegex(/^[A-Za-zÀ-ú]+(?:\s[A-Za-zÀ-ú]+)*$/, nome)){
+        if (!nomeRegex.test(nome)){
             setErros(errosAnteriores => ({
                 ...errosAnteriores,
                 nome: 'O nome do voluntário inserido é inválido.',
@@ -72,7 +78,7 @@ const RegistrarVoluntario = ({ route }: { route: any }) => {
             erros++;
         }
 
-        if (!testRegex(/^[^\s].*$/, curso)){
+        if (!cursoRegex.test(curso)){
             setErros(errosAnteriores => ({
                 ...errosAnteriores,
                 curso: 'O nome do curso inserido é inválido.',
@@ -81,7 +87,7 @@ const RegistrarVoluntario = ({ route }: { route: any }) => {
             erros++;
         }
 
-        if (telefone != '' && !testRegex(/^\(\d{2}\) (9\d{4}-\d{4}|\d{4}-\d{4})$/, telefone)){
+        if (telefone != '' && !telefoneRegex.test(telefone)){
             setErros(errosAnteriores => ({
                 ...errosAnteriores,
                 telefone: 'O número de telefone precisa seguir o padrão brasileiro, assim como (DD) 9XXXX-XXXX.',
@@ -90,7 +96,7 @@ const RegistrarVoluntario = ({ route }: { route: any }) => {
             erros++;
         }
 
-        if (email != '' && !testRegex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, email)){
+        if (email != '' && !emailRegex.test(email)){
             setErros(errosAnteriores => ({
                 ...errosAnteriores,
                 email: 'O e-mail inserido é inválido.',
@@ -99,7 +105,7 @@ const RegistrarVoluntario = ({ route }: { route: any }) => {
             erros++;
         }
 
-        if (!testRegex(/^\d+$/, horas)){
+        if (!horasRegex.test(horas)){
             setErros(errosAnteriores => ({
                 ...errosAnteriores,
                 horas: 'O número de horas inserido é inválido.',
@@ -114,6 +120,8 @@ const RegistrarVoluntario = ({ route }: { route: any }) => {
     };
 
     const adicionarVoluntario = () => {
+        setUploading(true);
+
         push(ref(db, 'eventos/' + evento.id + '/voluntarios/'), {
             nome: nome,
             curso: curso,
@@ -125,11 +133,14 @@ const RegistrarVoluntario = ({ route }: { route: any }) => {
             navigation.navigate("Detalhes do Evento - AMEM", { evento: evento });
         }).catch((error) => {
             showToast(toast, "#E11D48", errorTranslate(error));
+        }).finally(() => {
+            setUploading(false);
         });
     };
 
     return (
         <ScrollView contentContainerStyle={{width:'100%'}}>
+            {showLoading(uploading, () => setUploading(false))}
             <Box style={styles.boxCentral}>
                 <Box style={styles.box1}>
                     <Pressable style={styles.box2} onPress={() => navigation.navigate("Detalhes do Evento - AMEM", { evento: evento })}>
@@ -150,7 +161,7 @@ const RegistrarVoluntario = ({ route }: { route: any }) => {
                             size={"lg"}
                             onKeyPress={(e) => handleKeyPress(e, cursoRef)}
                         />
-                        {'nome' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.nome}</FormControl.ErrorMessage> : ''}
+                        {'nome' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.nome}</FormControl.ErrorMessage> : null}
                     </FormControl>
                     <FormControl isRequired isInvalid={'curso' in erros}>
                         <FormControl.Label>Curso:</FormControl.Label>
@@ -163,7 +174,7 @@ const RegistrarVoluntario = ({ route }: { route: any }) => {
                             size={"lg"}
                             onKeyPress={(e) => handleKeyPress(e, telefoneRef)}
                         />
-                        {'curso' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.curso}</FormControl.ErrorMessage> : ''}
+                        {'curso' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.curso}</FormControl.ErrorMessage> : null}
                     </FormControl>
                     <FormControl isInvalid={'telefone' in erros}>
                         <FormControl.Label>Telefone:</FormControl.Label>
@@ -176,7 +187,7 @@ const RegistrarVoluntario = ({ route }: { route: any }) => {
                             size={"lg"}
                             onKeyPress={(e) => handleKeyPress(e, emailRef)}
                         />
-                        {'telefone' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.telefone}</FormControl.ErrorMessage> : ''}
+                        {'telefone' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.telefone}</FormControl.ErrorMessage> : null}
                     </FormControl>
                     <FormControl isInvalid={'email' in erros}>
                         <FormControl.Label>E-mail:</FormControl.Label>
@@ -189,7 +200,7 @@ const RegistrarVoluntario = ({ route }: { route: any }) => {
                             size={"lg"}
                             onKeyPress={(e) => handleKeyPress(e, horasRef)}
                         />
-                        {'email' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.email}</FormControl.ErrorMessage> : ''}
+                        {'email' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.email}</FormControl.ErrorMessage> : null}
                     </FormControl>
                     <FormControl isRequired isInvalid={'horas' in erros}>
                         <FormControl.Label>Horas Complementares:</FormControl.Label>
@@ -202,7 +213,7 @@ const RegistrarVoluntario = ({ route }: { route: any }) => {
                             size={"lg"}
                             onKeyPress={(e) => handleKeyPress(e, null)}
                         />
-                        {'horas' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.horas}</FormControl.ErrorMessage> : ''}
+                        {'horas' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.horas}</FormControl.ErrorMessage> : null}
                     </FormControl>
                 </Box>
                 <Box flexDirection={"row"}>

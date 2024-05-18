@@ -1,23 +1,30 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, HStack, Icon, Input, Pressable, ScrollView, Select, Spacer, Text, Tooltip, VStack } from "native-base";
 import { StyleSheet } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { Box, Button, HStack, Icon, Input, Pressable, ScrollView, Select, Skeleton, Text, Tooltip, VStack } from "native-base";
 import { onValue, ref } from "firebase/database";
 import { db } from "../services/firebaseConfig";
+import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from '@expo/vector-icons';
-import { setDefaultEventParameters } from "firebase/analytics";
 
 const ListaDoacoes = () => {
+    // Fixas
     const navigation = useNavigation<any>();
+
+    // Variáveis
+    const [carregando, setCarregando] = useState(true);
     const [dadosDoacoes, setDoacoes] = useState<any>([]);
+    
+    // Gets & Sets
     const [filtroNome, setFiltroNome] = useState("");
     const [filtroTipo, setFiltroTipo] = useState("");
-
+    
+    // Limpa os campos de filtro.
     const limparFiltros = () => {
         setFiltroNome("");
         setFiltroTipo("");
     };
 
+    // Busca todas as doações no banco de dados.
     useEffect(() => {
         const queryDoacoes = ref(db, "eventos/");
 
@@ -39,6 +46,7 @@ const ListaDoacoes = () => {
                             (filtroNome === "" || (doacao.organizacao.toLowerCase().includes(filtroNome.toLowerCase())) || doacao.material.toLowerCase().includes(filtroNome.toLowerCase())) && 
                             (filtroTipo === "" || doacao.tipo === filtroTipo)
                         );
+                        
                         todasDoacoes = [...todasDoacoes, ...doacoesEvento];
                     }
                 });
@@ -47,6 +55,8 @@ const ListaDoacoes = () => {
             } else {
                 setDoacoes([]);
             }
+
+            setCarregando(false);
         });
     }, [filtroNome, filtroTipo]);
 
@@ -80,21 +90,16 @@ const ListaDoacoes = () => {
                                     <Box bg={isHovered ? "coolGray.100" : null} rounded={isHovered ? 5 : 0} key={index} borderBottomWidth={1} borderBottomColor={"#D4D4D4"} py="2" pl="4" pr={5}>
                                         <HStack space={[2, 3]} justifyContent="space-between" alignItems={"center"}>
                                             <VStack>
-                                                <Text bold>
-                                                    {item.organizacao}
-                                                </Text>
-                                                <Text> 
-                                                    {item.quantidade} {item.unidade} {item.material}.
-                                                </Text>
+                                                <Text bold>{item.organizacao}</Text>
+                                                <Text>{item.quantidade} {item.unidade} {item.material}.</Text>
                                             </VStack>
-                                            <Spacer />
                                             {item.tipo == "efetuada" ? <Icon as={<MaterialIcons name={"arrow-circle-right"} />} size={5} color="#E11D48" /> : <Icon as={<MaterialIcons name={"arrow-circle-left"} />} size={5} color="#16A34A" />}
                                         </HStack>
                                     </Box>
                                 );
                             }}
                         </Pressable>
-                    )) : <Text py="2" px="4">Não há doações.</Text>}
+                    )) : carregando ? <Skeleton.Text lines={2} p={4} /> : <Text py={2} px={4}>Não há doações.</Text>}
                 </Box>
             </Box>
         </ScrollView>

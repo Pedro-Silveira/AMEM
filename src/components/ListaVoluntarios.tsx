@@ -1,20 +1,28 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, HStack, Icon, Input, Pressable, ScrollView, Spacer, Text, Tooltip, VStack } from "native-base";
 import { StyleSheet } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { Box, Button, HStack, Icon, Input, Pressable, ScrollView, Skeleton, Text, Tooltip, VStack } from "native-base";
 import { onValue, ref } from "firebase/database";
 import { db } from "../services/firebaseConfig";
+import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from '@expo/vector-icons';
 
 const ListaVoluntarios = () => {
+    // Fixas
     const navigation = useNavigation<any>();
+
+    // Variáveis
+    const [carregando, setCarregando] = useState(true);
     const [dadosVoluntarios, setVoluntarios] = useState<any>([]);
+
+    // Gets & Sets
     const [filtroNome, setFiltroNome] = useState("");
 
+    // Limpa os campos de filtro.
     const limparFiltros = () => {
         setFiltroNome("");
     };
 
+    // Busca todos os voluntários no banco de dados.
     useEffect(() => {
         const queryVoluntarios = ref(db, "eventos/");
 
@@ -33,7 +41,9 @@ const ListaVoluntarios = () => {
                             idVoluntario: voluntarioKey,
                             ...evento.voluntarios[voluntarioKey]
                         })).filter((voluntario: { nome: any; }) => 
-                            (filtroNome === "" || voluntario.nome.toLowerCase().includes(filtroNome.toLowerCase())));
+                            (filtroNome === "" || voluntario.nome.toLowerCase().includes(filtroNome.toLowerCase()))
+                        );
+
                         todosVoluntarios = [...todosVoluntarios, ...voluntariosEvento];
                     }
                 });
@@ -42,6 +52,8 @@ const ListaVoluntarios = () => {
             } else {
                 setVoluntarios([]);
             }
+
+            setCarregando(false);
         });
     }, [filtroNome]);
 
@@ -70,21 +82,16 @@ const ListaVoluntarios = () => {
                                     <Box bg={isHovered ? "coolGray.100" : null} rounded={isHovered ? 5 : 0} key={index} borderBottomWidth={1} borderBottomColor={"#D4D4D4"} py="2" pl="4" pr={5}>
                                         <HStack space={[2, 3]} justifyContent="space-between" alignItems={"center"}>
                                             <VStack>
-                                                <Text bold>
-                                                    {item.nome}
-                                                </Text>
-                                                <Text >
-                                                    {item.horas} hora(s).
-                                                </Text>
+                                                <Text bold>{item.nome}</Text>
+                                                <Text>{item.horas} hora(s).</Text>
                                             </VStack>
-                                            <Spacer />
                                             <Icon as={<MaterialIcons name={"timer"} />} size={5} color="#bebebe" />
                                         </HStack>
                                     </Box>
                                 );
                             }}
                         </Pressable>
-                    )) : <Text py="2" px="4">Não há voluntários.</Text>}
+                    )) : carregando ? <Skeleton.Text lines={2} p={4} /> : <Text py={2} px={4}>Não há voluntários.</Text>}
                 </Box>
             </Box>
         </ScrollView>
