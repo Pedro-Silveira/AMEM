@@ -45,13 +45,13 @@ const ListaDoacoes = () => {
                         })).filter((doacao: { organizacao: any; material: any; tipo: any; }) => 
                             (filtroNome === "" || (doacao.organizacao.toLowerCase().includes(filtroNome.toLowerCase())) || doacao.material.toLowerCase().includes(filtroNome.toLowerCase())) && 
                             (filtroTipo === "" || doacao.tipo === filtroTipo)
-                        );
+                        )
                         
                         todasDoacoes = [...todasDoacoes, ...doacoesEvento];
                     }
                 });
 
-                setDoacoes(todasDoacoes);
+                setDoacoes(todasDoacoes.reverse());
             } else {
                 setDoacoes([]);
             }

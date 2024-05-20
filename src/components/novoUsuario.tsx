@@ -1,42 +1,52 @@
-import React, { useEffect, useState, useRef } from "react";
-import { Box, Button, CheckIcon, FormControl, Icon, Input, Pressable, ScrollView, Select, Text, useToast, WarningOutlineIcon } from "native-base";
+import React, { useState, useRef } from "react";
 import { StyleSheet } from "react-native";
+import { Box, Button, FormControl, Icon, Input, Pressable, ScrollView, Select, Text, useToast, WarningOutlineIcon } from "native-base";
 import { auth, db } from "../services/firebaseConfig";
 import { ref, set } from "firebase/database";
-import { useNavigation } from "@react-navigation/native";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from '@expo/vector-icons';
 import showToast from "../util/showToast";
 import errorTranslate from "../util/errorTranslate";
 import showLoading from "../util/showLoading";
 
 const NovoUsuario = () => {
+    // Fixas
+    const navigation = useNavigation<any>();
+    const toast = useToast();
+
+    // Variáveis
+    const [uploading, setUploading] = useState(false);
+    const [erros, setErros] = useState({});
+    const [show, setShow] = useState(false);
+    const [show2, setShow2] = useState(false);
+
+    // Gets & Sets
     const [nome, setNome] = useState('');
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [senhaRepeticao, setSenhaRepeticao] = useState('');
     const [permissao, setPermissao] = useState('');
-    const [erros, setErros] = useState({});
-    const navigation = useNavigation<any>();
-    const toast = useToast();
-    const [uploading, setUploading] = useState(false);
 
+    // Refs
     const nomeRef = useRef(null);
     const emailRef = useRef(null);
     const senhaRef = useRef(null);
     const senhaRepeticaoRef = useRef(null);
     const permissaoRef = useRef(null);
 
-    const handleKeyPress = (event: any, nextRef: any) => {
-        if (event.nativeEvent.key === 'Enter') {
-            if (nextRef) {
-                nextRef.current.focus();
+    // Muda o foco do formulário ao pressionar enter.
+    const mudarRef = (evento: any, proximaRef: any) => {
+        if (evento === "Enter" || evento.nativeEvent.key === "Enter") {
+            if (proximaRef) {
+                proximaRef.current.focus();
             } else {
                 validarUsuario();
             }
         }
     };
 
+    // Limpa os campos do formulário.
     const limpar = () => {
         setNome('');
         setEmail('');
@@ -46,6 +56,7 @@ const NovoUsuario = () => {
         setErros({});
     };
 
+    // Valida os campos do formulários através de expressões regulares.
     const validarUsuario = () => {
         const nomeRegex = new RegExp(/^[A-Za-zÀ-ú]+(?:\s[A-Za-zÀ-ú]+)*$/);
         const emailRegex = new RegExp(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/);
@@ -100,14 +111,15 @@ const NovoUsuario = () => {
         }
 
         if ( erros == 0 ) {
-            handleSignin();
+            criarUsuario();
         }
     };
 
-    const handleSignin = () => {
+    // Cria o usuário no firebase e armazena no banco de dados.
+    const criarUsuario = async () => {
         setUploading(true);
 
-        createUserWithEmailAndPassword(auth, email, senha)
+        await createUserWithEmailAndPassword(auth, email, senha)
         .then(() => {
             if (auth.currentUser) {
                 updateProfile(auth.currentUser, {
@@ -119,7 +131,7 @@ const NovoUsuario = () => {
                         permissao: permissao
                     }).then(() => {
                         showToast(toast, "#404040", "O usuário foi cadastrado com sucesso!");
-                        navigation.navigate("Controle de Eventos - AMEM");
+                        auth.signOut();
                     }).catch((error) => {
                         showToast(toast, "#E11D48", errorTranslate(error));
                     }).finally(() => {
@@ -140,7 +152,7 @@ const NovoUsuario = () => {
         });
     };
 
-    return(
+    return (
         <ScrollView contentContainerStyle={{width:'100%'}}>
             {showLoading(uploading, () => setUploading(false))}
             <Box style={styles.boxCentral}>
@@ -154,89 +166,47 @@ const NovoUsuario = () => {
                 <Box style={styles.box1}>
                     <FormControl isRequired isInvalid={'nome' in erros}>
                         <FormControl.Label>Nome:</FormControl.Label>
-                        <Input 
-                            ref={nomeRef}
-                            value={nome} 
-                            placeholder="Escolha um nome..." 
-                            onChangeText={novoNome => setNome(novoNome)} 
-                            backgroundColor={"white"} 
-                            size={"lg"}
-                            onKeyPress={(e) => handleKeyPress(e, emailRef)}
-                        />
+                        <Input autoFocus ref={nomeRef} value={nome} placeholder="Escolha um nome..." onChangeText={novoNome => setNome(novoNome)} backgroundColor={"white"} size={"lg"} onKeyPress={(tecla) => mudarRef(tecla, permissaoRef)} />
                         {'nome' in erros ?
-                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.nome}</FormControl.ErrorMessage>: null
-                        }
-                    </FormControl>
-                    <FormControl isRequired isInvalid={'email' in erros}>
-                        <FormControl.Label>E-mail:</FormControl.Label>
-                        <Input 
-                            ref={emailRef}
-                            value={email} 
-                            placeholder="Insira o e-mail..." 
-                            onChangeText={novoEmail => setEmail(novoEmail)} 
-                            backgroundColor={"white"} 
-                            size={"lg"}
-                            onKeyPress={(e) => handleKeyPress(e, senhaRef)}
-                        />
-                        {'email' in erros ?
-                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.email}</FormControl.ErrorMessage>: null
-                        }
-                    </FormControl>
-                    <FormControl isRequired isInvalid={'senha' in erros}>
-                        <FormControl.Label>Senha:</FormControl.Label>
-                        <Input 
-                            ref={senhaRef}
-                            value={senha} 
-                            type="password" 
-                            placeholder="Escolha uma senha..." 
-                            onChangeText={novaSenha => setSenha(novaSenha)} 
-                            backgroundColor={"white"} 
-                            size={"lg"}
-                            onKeyPress={(e) => handleKeyPress(e, senhaRepeticaoRef)}
-                        />
-                        {'senha' in erros ?
-                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.senha}</FormControl.ErrorMessage>: null
-                        }
-                    </FormControl>
-                    <FormControl isRequired isInvalid={'senhaRepeticao' in erros}>
-                        <FormControl.Label>Confirmar Senha:</FormControl.Label>
-                        <Input 
-                            ref={senhaRepeticaoRef}
-                            value={senhaRepeticao} 
-                            type="password" 
-                            placeholder="Repita a senha..." 
-                            onChangeText={novaSenhaRepeticao => setSenhaRepeticao(novaSenhaRepeticao)} 
-                            backgroundColor={"white"} 
-                            size={"lg"}
-                            onKeyPress={(e) => handleKeyPress(e, permissaoRef)}
-                        />
-                        {'senhaRepeticao' in erros ?
-                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.senhaRepeticao}</FormControl.ErrorMessage>: null
-                        }
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.nome}</FormControl.ErrorMessage>
+                        : null }
                     </FormControl>
                     <FormControl isRequired isInvalid={'permissao' in erros}>
                         <FormControl.Label>Permissão:</FormControl.Label>
-                        <Select 
-                            ref={permissaoRef}
-                            dropdownIcon={<Icon as={MaterialIcons} name="keyboard-arrow-down" color={"#bebebe"} mr={2} size={"xl"} />} 
-                            selectedValue={permissao} 
-                            onValueChange={novaPermissao => setPermissao(novaPermissao)} 
-                            placeholder="Escolha uma permissão..." 
-                            backgroundColor={"white"} 
-                            size={"lg"}
-                        >
+                        <Select ref={permissaoRef} dropdownIcon={<Icon as={MaterialIcons} name="keyboard-arrow-down" color={"#bebebe"} mr={2} size={"xl"} />} selectedValue={permissao} onValueChange={novaPermissao => {setPermissao(novaPermissao); mudarRef("Enter", emailRef)}} placeholder="Escolha uma permissão..." backgroundColor={"white"} size={"lg"} >
                             <Select.Item label="Usuário" value="usuario" />
                             <Select.Item label="Editor" value="editor" />
                             <Select.Item label="Administrador" value="administrador" />
                         </Select>
                         {'permissao' in erros ?
-                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.permissao}</FormControl.ErrorMessage> : null
-                        }
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.permissao}</FormControl.ErrorMessage>
+                        : null }
+                    </FormControl>
+                    <FormControl isRequired isInvalid={'email' in erros}>
+                        <FormControl.Label>E-mail:</FormControl.Label>
+                        <Input ref={emailRef} value={email} placeholder="Insira o e-mail..." onChangeText={novoEmail => setEmail(novoEmail)} backgroundColor={"white"} size={"lg"} onKeyPress={(tecla) => mudarRef(tecla, senhaRef)} />
+                        {'email' in erros ?
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.email}</FormControl.ErrorMessage>
+                        : null }
+                    </FormControl>
+                    <FormControl isRequired isInvalid={'senha' in erros}>
+                        <FormControl.Label>Senha:</FormControl.Label>
+                        <Input ref={senhaRef} value={senha} type={show ? "text" : "password"} InputRightElement={<Pressable onPress={() => setShow(!show)}><Icon as={<MaterialIcons name={show ? "visibility" : "visibility-off"} />} size={5} mr="3" color="#bebebe" /></Pressable>} placeholder="Escolha uma senha..." onChangeText={novaSenha => setSenha(novaSenha)} backgroundColor={"white"} size={"lg"} onKeyPress={(tecla) => mudarRef(tecla, senhaRepeticaoRef)} />
+                        {'senha' in erros ?
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.senha}</FormControl.ErrorMessage>
+                        : null }
+                    </FormControl>
+                    <FormControl isRequired isInvalid={'senhaRepeticao' in erros}>
+                        <FormControl.Label>Confirmar Senha:</FormControl.Label>
+                        <Input ref={senhaRepeticaoRef} value={senhaRepeticao} type={show2 ? "text" : "password"} InputRightElement={<Pressable onPress={() => setShow2(!show2)}><Icon as={<MaterialIcons name={show2 ? "visibility" : "visibility-off"} />} size={5} mr="3" color="#bebebe" /></Pressable>} placeholder="Repita a senha..." onChangeText={novaSenhaRepeticao => setSenhaRepeticao(novaSenhaRepeticao)} backgroundColor={"white"} size={"lg"} onKeyPress={(tecla) => mudarRef(tecla, null)} />
+                        {'senhaRepeticao' in erros ?
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.senhaRepeticao}</FormControl.ErrorMessage>
+                        : null }
                     </FormControl>
                 </Box>
                 <Box flexDirection={"row"}>
                     <Button size={"lg"} backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}} flex={1} marginRight={1} onPress={validarUsuario}>Cadastrar</Button>
-                    <Button size={"lg"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} flex={1} marginRight={1} onPress={limpar}>Limpar</Button>
+                    <Button size={"lg"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} flex={1} marginLeft={1} onPress={limpar}>Limpar</Button>
                 </Box>
             </Box>
         </ScrollView>

@@ -1,5 +1,6 @@
 import { Box } from "native-base";
 
+// Exibe um toast na tela com os dados recebidos.
 export default function showToast(toast: any, bgColor: any, msg: any){
     toast.show({
         render: () => {

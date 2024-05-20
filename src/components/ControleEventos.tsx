@@ -5,11 +5,11 @@ import { db } from "../services/firebaseConfig";
 import { onValue, ref } from "firebase/database";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from '@expo/vector-icons';
-import useUserPermission from "../util/getPermission";
+import getUserPermission from "../util/getPermission";
 
 const ControleEventos = () => {
     // Fixas
-    const userPermission = useUserPermission();
+    const userPermission = getUserPermission();
     const navigation = useNavigation<any>();
 
     // Variáveis
@@ -25,6 +25,28 @@ const ControleEventos = () => {
     const [filtroStatus, setFiltroStatus] = useState("Planejado");
     const [filtroDataInicial, setFiltroDataInicial] = useState("");
     const [filtroDataFinal, setFiltroDataFinal] = useState("");
+
+    // Formata a data conforme o usuário digita.
+    const formatarData = (valor: any, filtro: any) => {
+        const novaData = valor.replace(/\D/g, "");
+
+        if (novaData.length <= 8) {
+            const dataFormatada = novaData.replace(/(\d{2})(\d{2})(\d{4})/, "$1/$2/$3");
+
+            if ( filtro == "inicial") {
+                setFiltroDataInicial(dataFormatada);
+            } else {
+                setFiltroDataFinal(dataFormatada);
+            }
+            
+        } else {
+            if ( filtro == "inicial") {
+                setFiltroDataInicial(valor);
+            } else {
+                setFiltroDataFinal(valor);
+            }
+        }
+    };
 
     // Limpa os campos de filtro.
     const limparFiltros = () => {
@@ -63,7 +85,7 @@ const ControleEventos = () => {
                         const dataA = new Date(`${mes}/${dia}/${ano}`);
                         const dataB = new Date(`${mes2}/${dia2}/${ano2}`);
 
-                        return dataB.getTime() - dataA.getTime();
+                        return dataA.getTime() - dataB.getTime();
                     });
 
                     resultadoDados.forEach((eventoKey) => {
@@ -191,18 +213,22 @@ const ControleEventos = () => {
                         <Button onPress={() => navigation.navigate("Cadastrar Evento - AMEM")} leftIcon={<Icon as={MaterialIcons} name="add" />} size={"sm"} backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}}>Cadastrar Evento</Button>
                     </Box>
                 : userPermission ? null : <Skeleton rounded={5} mt={4} /> }
-                <Box flexDir={"row"} mb={2} mt={25}>
-                    <Input value={filtroNome} onChangeText={(text) => setFiltroNome(text)} InputRightElement={<Icon as={MaterialIcons} name="search" color={"#bebebe"} mr={2} />} flex={2} size="md" placeholder="Filtrar pelo nome..." backgroundColor={"white"} mr={2} />
-                    <Select selectedValue={filtroStatus} onValueChange={(itemValue) => setFiltroStatus(itemValue)} dropdownIcon={<Icon as={MaterialIcons} name="keyboard-arrow-down" color={"#bebebe"} mr={2} />} flex={1} size={"md"} placeholder="Filtrar pelo tipo..." backgroundColor={"white"} mr={2} >
-                        <Select.Item label="Todos" value="" />
-                        <Select.Item label="Planejado" value="Planejado" />
-                        <Select.Item label="Encerrado" value="Encerrado" />
-                    </Select>
-                    <Input value={filtroDataInicial} onChangeText={(text) => setFiltroDataInicial(text)} InputRightElement={<Icon as={MaterialIcons} name="date-range" color={"#bebebe"} mr={2} />} flex={1} size="md" placeholder="Data inicial..." backgroundColor={"white"} mr={2} />
-                    <Input value={filtroDataFinal} onChangeText={(text) => setFiltroDataFinal(text)} InputRightElement={<Icon as={MaterialIcons} name="date-range" color={"#bebebe"} mr={2} />} flex={1} size="md" placeholder="Data final..." backgroundColor={"white"} mr={2} />
-                    <Tooltip label="Limpar filtros" openDelay={500}>
-                        <Button onPress={limparFiltros} leftIcon={<Icon as={MaterialIcons} name="restart-alt" />} size={"sm"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} />
-                    </Tooltip>
+                <Box flexDir={{base: "column", md: "row"}} mt={25} mb={2}>
+                    <Box flexDir={"row"} flex={1} mb={{base: 2, md: 0}}>
+                        <Input value={filtroNome} onChangeText={(texto) => setFiltroNome(texto)} flex={2} InputRightElement={<Icon as={MaterialIcons} name="search" color={"#bebebe"} mr={2} />} size="md" placeholder="Filtrar pelo nome..." backgroundColor={"white"} mr={2} />
+                        <Select selectedValue={filtroStatus} onValueChange={(item) => setFiltroStatus(item)} flex={1} dropdownIcon={<Icon as={MaterialIcons} name="keyboard-arrow-down" color={"#bebebe"} mr={2} />} size={"md"} placeholder="Filtrar pelo tipo..." backgroundColor={"white"} mr={{base: 0, md: 2}} >
+                            <Select.Item label="Todos" value="" />
+                            <Select.Item label="Planejado" value="Planejado" />
+                            <Select.Item label="Encerrado" value="Encerrado" />
+                        </Select>
+                    </Box>
+                    <Box flexDir={"row"} flex={1}>
+                        <Input value={filtroDataInicial} onChangeText={(texto) => formatarData(texto, "inicial")} flex={1} InputRightElement={<Icon as={MaterialIcons} name="date-range" color={"#bebebe"} mr={2} />} size="md" placeholder="Data inicial..." backgroundColor={"white"} mr={2} />
+                        <Input value={filtroDataFinal} onChangeText={(texto) => formatarData(texto, "final")} flex={1} InputRightElement={<Icon as={MaterialIcons} name="date-range" color={"#bebebe"} mr={2} />} size="md" placeholder="Data final..." backgroundColor={"white"} mr={2} />
+                        <Tooltip label="Limpar filtros" openDelay={500}>
+                            <Button onPress={limparFiltros} leftIcon={<Icon as={MaterialIcons} name="restart-alt" />} size={"sm"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} />
+                        </Tooltip>
+                    </Box>
                 </Box>
                 <Box backgroundColor={"#fff"} borderWidth={1} borderColor={"#D4D4D4"} rounded={5}>
                     {exibirEventos()}

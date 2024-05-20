@@ -14,6 +14,7 @@ const Login = () => {
     // Variáveis
     const [erros, setErros] = useState({});
     const [showModal, setShowModal] = useState(false);
+    const [show, setShow] = useState(false);
 
     // Gets & Sets
     const [email, setEmail] = useState('');
@@ -25,14 +26,24 @@ const Login = () => {
     const senhaRef = useRef(null);    
 
     // Muda o foco do formulário ao pressionar enter.
-    const mudarRef = (evento: any, proximaRef: any) => {
+    const mudarRef = (evento: any, proximaRef: any, rec: any = null) => {
         if (evento.nativeEvent.key === "Enter") {
             if (proximaRef) {
                 proximaRef.current.focus();
+            } else if (rec) {
+                validarRecuperacao();
             } else {
                 fazerLogin();
             }
         }
+    };
+
+    // Entra com uma conta no firebase.
+    const fazerLogin = async () => {
+        await signInWithEmailAndPassword(auth, email, senha)
+        .catch((error) => {
+            showToast(toast, "#E11D48", errorTranslate(error.code));
+        });
     };
 
     // Valida o login com base em expressões regulares.
@@ -55,13 +66,7 @@ const Login = () => {
         }
     };
 
-    const fazerLogin = () => {
-        signInWithEmailAndPassword(auth, email, senha)
-        .catch((error) => {
-            showToast(toast, "#E11D48", errorTranslate(error.code));
-        });
-    };
-
+    // Envia um e-mail de recuperação de senha.
     const recuperarSenha = async (mailto: any) => {
         await sendPasswordResetEmail(auth, mailto)
         .then(() => {
@@ -79,7 +84,7 @@ const Login = () => {
                     <Input ref={emailRef} onKeyPress={(tecla) => mudarRef(tecla, senhaRef)} value={email} placeholder="Insira seu e-mail..." onChangeText={novoEmail => setEmail(novoEmail)} backgroundColor={"white"} size={"xl"} w={{base: "100%", md: "50%", lg: "30%"}} InputLeftElement={<Icon as={<MaterialIcons name="email" />} size={5} ml="3" color="#bebebe" />} />
                 </FormControl>
                 <FormControl isRequired isInvalid={'senha' in erros} alignItems={"center"}>
-                    <Input ref={senhaRef} onKeyPress={(tecla) => mudarRef(tecla, null)} value={senha} type={"password"} placeholder="Insira sua senha..." onChangeText={novaSenha => setSenha(novaSenha)} backgroundColor={"white"} size={"xl"} w={{base: "100%", md: "50%", lg: "30%"}} InputLeftElement={<Icon as={<MaterialIcons name="lock" />} size={5} ml="3" color="#bebebe" />} />
+                    <Input ref={senhaRef} onKeyPress={(tecla) => mudarRef(tecla, null)} value={senha} type={show ? "text" : "password"} InputRightElement={<Pressable onPress={() => setShow(!show)}><Icon as={<MaterialIcons name={show ? "visibility" : "visibility-off"} />} size={5} mr="3" color="#bebebe" /></Pressable>} placeholder="Insira sua senha..." onChangeText={novaSenha => setSenha(novaSenha)} backgroundColor={"white"} size={"xl"} w={{base: "100%", md: "50%", lg: "30%"}} InputLeftElement={<Icon as={<MaterialIcons name="lock" />} size={5} ml="3" color="#bebebe" />} />
                 </FormControl>
                 <Button size={"lg"} mb={4} mt={4} w={{base: "100%", md: "50%", lg: "30%"}} backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}} onPress={fazerLogin}>Entrar</Button>
                 <Pressable onPress={() => setShowModal(true)} marginBottom={50}>
@@ -93,16 +98,16 @@ const Login = () => {
                             <Text mb={3}>Insira seu endereço de e-mail e redefina a senha.</Text>
                             <FormControl isRequired isInvalid={'emailRec' in erros}>
                                 <FormControl.Label>E-mail:</FormControl.Label>
-                                <Input value={emailRec} placeholder="Insira seu e-mail..." onChangeText={novoEmailRec => setEmailRec(novoEmailRec)} backgroundColor={"white"} size={"lg"}/>
+                                <Input value={emailRec} onKeyPress={(tecla) => mudarRef(tecla, null, true)} placeholder="Insira seu e-mail..." onChangeText={novoEmailRec => setEmailRec(novoEmailRec)} backgroundColor={"white"} size={"lg"}/>
                                 {'emailRec' in erros ?
-                                    <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.emailRec}</FormControl.ErrorMessage>: null
-                                }
+                                    <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.emailRec}</FormControl.ErrorMessage>
+                                : null }
                             </FormControl>
                         </Modal.Body>
                         <Modal.Footer>
                             <Button.Group space={2}>
                                 <Button variant="ghost" colorScheme="coolGray" onPress={() => {setShowModal(false);}}>Cancelar</Button>
-                                <Button backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}} onPress={() => {validarRecuperacao();}}>Enviar</Button>
+                                <Button backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}} onPress={() => {validarRecuperacao()}}>Enviar</Button>
                             </Button.Group>
                         </Modal.Footer>
                     </Modal.Content>

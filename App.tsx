@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
+import { LogBox, StatusBar } from 'react-native';
 import { NativeBaseProvider } from "native-base";
+import { auth } from "./src/services/firebaseConfig";
+import { onAuthStateChanged, User } from "firebase/auth";
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import { onAuthStateChanged, User } from "firebase/auth";
 import Navbar from "./src/components/Navbar";
 import Footer from "./src/components/Footer";
 import CadastrarEvento from "./src/components/CadastrarEvento";
 import ControleEventos from "./src/components/ControleEventos";
 import Login from "./src/components/Login";
-import { auth, db } from "./src/services/firebaseConfig";
 import NovoUsuario from "./src/components/NovoUsuario";
 import DetalhesEvento from "./src/components/DetalhesEvento";
 import RegistrarDoacao from "./src/components/RegistrarDoacao";
@@ -19,12 +20,12 @@ import ListaDoacoes from "./src/components/ListaDoacoes";
 import ListaVoluntarios from "./src/components/ListaVoluntarios";
 import controleUsuarios from "./src/components/ControleUsuarios";
 import DetalhesUsuario from "./src/components/DetalhesUsuario";
-import { LogBox } from 'react-native';
 
+// Fixas
 const Stack = createNativeStackNavigator();
 const InsideStack = createNativeStackNavigator();
 
-function InsideLayout(){
+function InsideLayout() {
   return (
     <>
       <Navbar />
@@ -48,11 +49,12 @@ function InsideLayout(){
 };
 
 export default function App() {
+  // Variáveis
   const [user, setUser] = useState<User | null>(null);
 
-  LogBox.ignoreLogs(['Warning: ...']);
   LogBox.ignoreAllLogs();
 
+  // Verifica se houveram alterações no usuário autenticado.
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       setUser(user);
@@ -62,8 +64,11 @@ export default function App() {
   return (
     <NativeBaseProvider>
       <NavigationContainer>
+        <StatusBar hidden={true} />
         <Stack.Navigator initialRouteName="Autenticação - AMEM" screenOptions={{headerShown: false}}>
-          {!user ? (<Stack.Screen name="Autenticação - AMEM" component={Login} />) : (<Stack.Screen name="AMEM" component={InsideLayout} />)}
+          { !user ? 
+            <Stack.Screen name="Autenticação - AMEM" component={Login} />
+          : <Stack.Screen name="AMEM" component={InsideLayout} /> }
         </Stack.Navigator>
       </NavigationContainer>
     </NativeBaseProvider>

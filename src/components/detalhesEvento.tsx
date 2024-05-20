@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { StyleSheet } from "react-native";
 import { AlertDialog, Box, Button, Divider, FormControl, HStack, Icon, Input, Pressable, ScrollView, Select, Skeleton, Text, TextArea, Tooltip, useToast, VStack, WarningOutlineIcon } from "native-base";
 import { onValue, ref, remove, update } from "firebase/database";
@@ -7,14 +7,14 @@ import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from '@expo/vector-icons';
 import showToast from "../util/showToast";
 import errorTranslate from "../util/errorTranslate";
-import useUserPermission from "../util/getPermission";
+import getUserPermission from "../util/getPermission";
 import showLoading from "../util/showLoading";
 
 const DetalhesEvento = ({ route }: { route: any }) => {
     // Fixas
     const { evento } = route.params;
     const navigation = useNavigation<any>();
-    const userPermission = useUserPermission();
+    const userPermission = getUserPermission();
     const toast = useToast();
 
     // Variáveis
@@ -35,7 +35,47 @@ const DetalhesEvento = ({ route }: { route: any }) => {
     const [dadosVoluntarios, setVoluntarios] = useState<any>([]);
     const [filtroDoacao, setFiltroDoacao] = useState("");
     const [filtroTipo, setFiltroTipo] = useState("");
-    const [filtroVoluntario, setFiltroVoluntario] = useState("");    
+    const [filtroVoluntario, setFiltroVoluntario] = useState("");
+
+    //Refs
+    const alertRef = React.useRef(null);
+    const nomeRef = useRef(null);
+    const dataRef = useRef(null);
+    const localRef = useRef(null);
+    const investimentoRef = useRef(null);
+    const observacoesRef = useRef(null);
+
+    // Muda o foco do formulário ao pressionar enter.
+    const mudarRef = (evento: any, proximaRef: any) => {
+        if (evento.nativeEvent.key === "Enter") {
+            if (proximaRef) {
+                proximaRef.current.focus();
+            } else {
+                validarEvento();
+            }
+        }
+    };
+
+    // Formata a data conforme o usuário digita.
+    const formatarData = (valor: any) => {
+        const novaData = valor.replace(/\D/g, "");
+
+        if (novaData.length <= 8) {
+            const dataFormatada = novaData.replace(/(\d{2})(\d{2})(\d{4})/, "$1/$2/$3");
+
+            setData(dataFormatada);
+        } else {
+            setData(valor);
+        }
+    };
+
+    // Formata o investimento conforme o usuário digita.
+    const formatarInvestimento = (valor: any) => {
+        const novoInvestimento = valor.replace(/[^\d]/g, "");
+        const numeroInvestimento = parseInt(novoInvestimento, 10) / 100 || 0;
+
+        setInvestimento(numeroInvestimento.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }));
+    };
 
     // Limpa os campos de filtro das doações.
     const limparFiltrosDoacao = () => {
@@ -64,7 +104,8 @@ const DetalhesEvento = ({ route }: { route: any }) => {
                 })).filter((doacao: { organizacao: any; material: any; tipo: any; }) => 
                     (filtroDoacao === "" || (doacao.organizacao.toLowerCase().includes(filtroDoacao.toLowerCase())) || doacao.material.toLowerCase().includes(filtroDoacao.toLowerCase())) && 
                     (filtroTipo === "" || doacao.tipo === filtroTipo)
-                );
+                ).reverse();
+                
                 setDoacoes(novosUsuarios);
             } else {
                 setDoacoes([]);
@@ -88,7 +129,9 @@ const DetalhesEvento = ({ route }: { route: any }) => {
                     id: key,
                     ...dataVoluntarios[key]
                 })).filter((voluntario: { nome: any; }) => 
-                    (filtroVoluntario === "" || voluntario.nome.toLowerCase().includes(filtroVoluntario.toLowerCase())));
+                    (filtroVoluntario === "" || voluntario.nome.toLowerCase().includes(filtroVoluntario.toLowerCase()))
+                ).reverse();
+
                 setVoluntarios(novosVoluntarios);
             } else {
                 setVoluntarios([]);
@@ -118,7 +161,7 @@ const DetalhesEvento = ({ route }: { route: any }) => {
     const validarEvento = () => {
         const nomeRegex = new RegExp(/^[^\s].*$/);
         const dataRegex = new RegExp(/^\d{2}\/\d{2}\/\d{4}$/);
-        const investimentoRegex = new RegExp(/^(?:0|[1-9]\d{0,2}(?:\.\d{3})*(?:,\d{1,2})?|,\d{1,2})$/);
+        const investimentoRegex = new RegExp(/^R\$\s(?:0|[0-9]\d{0,2}(?:\.\d{3})*(?:,\d{1,2})?|,\d{1,2})$/);
         let erros = 0;
 
         setErros({});
@@ -186,9 +229,9 @@ const DetalhesEvento = ({ route }: { route: any }) => {
 
     // Muda o status do evento para encerrado no banco de dados.
     const encerrarEvento = () => {
-        setUploading(true);
-
         if(evento.status != "Encerrado"){
+            setUploading(true);
+
             update(ref(db, 'eventos/' + evento.id), {
                 status: "Encerrado"
             }).then(() => {
@@ -233,45 +276,46 @@ const DetalhesEvento = ({ route }: { route: any }) => {
                 <Box style={styles.box2}>
                     <FormControl isRequired isInvalid={'nome' in erros}>
                         <FormControl.Label>Nome:</FormControl.Label>
-                        <Input value={nome} placeholder="Ex.: Ação de Graças" onChangeText={novoNome => setNome(novoNome)} backgroundColor={"white"} size={"lg"} />
+                        <Input value={nome} ref={nomeRef} onKeyPress={(tecla) => mudarRef(tecla, dataRef)} placeholder="Ex.: Ação de Graças" onChangeText={novoNome => setNome(novoNome)} backgroundColor={"white"} size={"lg"} />
                         {'nome' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.nome}</FormControl.ErrorMessage>
                         : null }
                     </FormControl>
                     <FormControl isRequired isInvalid={'data' in erros}>
                         <FormControl.Label>Data:</FormControl.Label>
-                        <Input value={data} placeholder="Ex.: 02/08/1972" onChangeText={novaData => setData(novaData)} backgroundColor={"white"} size={"lg"}/>
+                        <Input value={data} ref={dataRef} onKeyPress={(tecla) => mudarRef(tecla, localRef)} placeholder="Ex.: 02/08/1972" onChangeText={novaData => formatarData(novaData)} backgroundColor={"white"} size={"lg"}/>
                         {'data' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.data}</FormControl.ErrorMessage>
                         : null}
                     </FormControl>
                     <FormControl isRequired isInvalid={'local' in erros}>
                         <FormControl.Label>Local:</FormControl.Label>
-                        <Input value={local} placeholder="Ex.: Capela São José" onChangeText={novoLocal => setLocal(novoLocal)} backgroundColor={"white"} size={"lg"}/>
+                        <Input value={local} ref={localRef} onKeyPress={(tecla) => mudarRef(tecla, investimentoRef)} placeholder="Ex.: Capela São José" onChangeText={novoLocal => setLocal(novoLocal)} backgroundColor={"white"} size={"lg"}/>
                         {'local' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.local}</FormControl.ErrorMessage>
                         : null }
                     </FormControl>
                     <FormControl isRequired isInvalid={'investimento' in erros}>
                         <FormControl.Label>Investimento:</FormControl.Label>
-                        <Input value={investimento} placeholder="Ex.: 1.080,00" onChangeText={novoInvestimento => setInvestimento(novoInvestimento)} backgroundColor={"white"} size={"lg"}/>
+                        <Input value={investimento} ref={investimentoRef} onKeyPress={(tecla) => mudarRef(tecla, observacoesRef)} placeholder="Ex.: 1.080,00" onChangeText={novoInvestimento => formatarInvestimento(novoInvestimento)} backgroundColor={"white"} size={"lg"}/>
                         {'investimento' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.investimento}</FormControl.ErrorMessage>
                         : null }
                     </FormControl>
                     <FormControl isInvalid={'observacoes' in erros}>
                         <FormControl.Label>Observações:</FormControl.Label>
-                        <TextArea value={observacoes} onChangeText={novaObservacao => setObservacoes(novaObservacao)} backgroundColor={"white"} w="100%" h={100} autoCompleteType={undefined} />
+                        <TextArea value={observacoes} ref={observacoesRef} onKeyPress={(tecla) => mudarRef(tecla, null)} onChangeText={novaObservacao => setObservacoes(novaObservacao)} backgroundColor={"white"} w="100%" h={100} autoCompleteType={undefined} />
                         {'observacoes' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.observacoes}</FormControl.ErrorMessage>
                         : null }
                     </FormControl>
                     {userPermission == "editor" && evento.status != "Encerrado" || userPermission == "administrador" ? 
                         <Box flexDirection={"row"} mt={25}>
+                            <Button onPress={validarEvento} marginRight={2} leftIcon={<Icon as={MaterialIcons} name="save" />} size={"sm"} backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}}>Salvar</Button>
                             {userPermission == "administrador" ? 
                                 <Button onPress={() => setIsOpen(!isOpen)} marginRight={2} leftIcon={<Icon as={MaterialIcons} name="delete"/>} size={"sm"} backgroundColor={"#E11D48"} _hover={{backgroundColor: "#BE123C"}}>Excluir</Button>
                             : null }
-                            <AlertDialog leastDestructiveRef={React.useRef(null)} isOpen={isOpen} onClose={() => setIsOpen(false)}>
+                            <AlertDialog leastDestructiveRef={alertRef} isOpen={isOpen} onClose={() => setIsOpen(false)}>
                                 <AlertDialog.Content>
                                 <AlertDialog.CloseButton />
                                 <AlertDialog.Header>Excluir Evento</AlertDialog.Header>
@@ -280,7 +324,7 @@ const DetalhesEvento = ({ route }: { route: any }) => {
                                 </AlertDialog.Body>
                                 <AlertDialog.Footer>
                                     <Button.Group space={2}>
-                                    <Button variant="ghost" colorScheme="coolGray" onPress={() => setIsOpen(false)} ref={React.useRef(null)}>
+                                    <Button variant="ghost" colorScheme="coolGray" onPress={() => setIsOpen(false)} ref={alertRef}>
                                         Cancelar
                                     </Button>
                                     <Button colorScheme="danger" onPress={excluirEvento}>
@@ -290,9 +334,8 @@ const DetalhesEvento = ({ route }: { route: any }) => {
                                 </AlertDialog.Footer>
                                 </AlertDialog.Content>
                             </AlertDialog>
-                            <Button onPress={validarEvento} marginRight={2} leftIcon={<Icon as={MaterialIcons} name="save" />} size={"sm"} backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}}>Salvar</Button>
                             <Button onPress={encerrarEvento} marginRight={2} leftIcon={<Icon as={MaterialIcons} name="done" />} size={"sm"} backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}}>Encerrar</Button>
-                            <AlertDialog leastDestructiveRef={React.useRef(null)} isOpen={isOpen2} onClose={() => setIsOpen2(false)}>
+                            <AlertDialog leastDestructiveRef={alertRef} isOpen={isOpen2} onClose={() => setIsOpen2(false)}>
                                 <AlertDialog.Content>
                                 <AlertDialog.CloseButton />
                                 <AlertDialog.Header>Planejar Evento</AlertDialog.Header>
@@ -301,7 +344,7 @@ const DetalhesEvento = ({ route }: { route: any }) => {
                                 </AlertDialog.Body>
                                 <AlertDialog.Footer>
                                     <Button.Group space={2}>
-                                    <Button variant="ghost" colorScheme="coolGray" onPress={() => setIsOpen2(false)} ref={React.useRef(null)}>
+                                    <Button variant="ghost" colorScheme="coolGray" onPress={() => setIsOpen2(false)} ref={alertRef}>
                                         Cancelar
                                     </Button>
                                     <Button backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}} onPress={ativarEvento}>

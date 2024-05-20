@@ -48,7 +48,7 @@ const ListaVoluntarios = () => {
                     }
                 });
 
-                setVoluntarios(todosVoluntarios);
+                setVoluntarios(todosVoluntarios.reverse());
             } else {
                 setVoluntarios([]);
             }

@@ -47,6 +47,27 @@ const CadastrarEvento = () => {
         }
     };
 
+    // Formata a data conforme o usuário digita.
+    const formatarData = (valor: any) => {
+        const novaData = valor.replace(/\D/g, "");
+
+        if (novaData.length <= 8) {
+            const dataFormatada = novaData.replace(/(\d{2})(\d{2})(\d{4})/, "$1/$2/$3");
+
+            setData(dataFormatada);
+        } else {
+            setData(valor);
+        }
+    };
+
+    // Formata o investimento conforme o usuário digita.
+    const formatarInvestimento = (valor: any) => {
+        const novoInvestimento = valor.replace(/[^\d]/g, "");
+        const numeroInvestimento = parseInt(novoInvestimento, 10) / 100 || 0;
+
+        setInvestimento(numeroInvestimento.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }));
+    };
+
     // Adiciona usuários na lista ao marcar o checkbox.
     const listaCheckbox = (id: string) => {
         if (usuarios.includes(id)) {
@@ -134,7 +155,7 @@ const CadastrarEvento = () => {
     const validarEvento = () => {
         const nomeRegex = new RegExp(/^[^\s].*$/);
         const dataRegex = new RegExp(/^\d{2}\/\d{2}\/\d{4}$/);
-        const investimentoRegex = new RegExp(/^(?:0|[1-9]\d{0,2}(?:\.\d{3})*(?:,\d{1,2})?|,\d{1,2})$/);
+        const investimentoRegex = new RegExp(/^R\$\s(?:0|[0-9]\d{0,2}(?:\.\d{3})*(?:,\d{1,2})?|,\d{1,2})$/);
         let erros = 0;
 
         setErros({});
@@ -219,14 +240,14 @@ const CadastrarEvento = () => {
                 <Box style={styles.box1}>
                     <FormControl isRequired isInvalid={'nome' in erros}>
                         <FormControl.Label>Nome:</FormControl.Label>
-                        <Input ref={nomeRef} value={nome} placeholder="Ex.: Ação de Graças" size={"lg"} backgroundColor={"white"} onChangeText={novoNome => setNome(novoNome)} onKeyPress={(tecla) => mudarRef(tecla, dataRef)} />
+                        <Input autoFocus ref={nomeRef} value={nome} placeholder="Ex.: Ação de Graças" size={"lg"} backgroundColor={"white"} onChangeText={novoNome => setNome(novoNome)} onKeyPress={(tecla) => mudarRef(tecla, dataRef)} />
                         {'nome' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.nome}</FormControl.ErrorMessage>
                         : null }
                     </FormControl>
                     <FormControl isRequired isInvalid={'data' in erros}>
                         <FormControl.Label>Data:</FormControl.Label>
-                        <Input ref={dataRef} value={data} placeholder="Ex.: 02/08/1972" size={"lg"} backgroundColor={"white"} onChangeText={novaData => setData(novaData)} onKeyPress={(tecla) => mudarRef(tecla, localRef)} />
+                        <Input ref={dataRef} value={data} placeholder="Ex.: 02/08/1972" size={"lg"} backgroundColor={"white"} onChangeText={novaData => formatarData(novaData)} onKeyPress={(tecla) => mudarRef(tecla, localRef)} />
                         {'data' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.data}</FormControl.ErrorMessage>
                         : null }
@@ -240,14 +261,14 @@ const CadastrarEvento = () => {
                     </FormControl>
                     <FormControl isRequired isInvalid={'investimento' in erros}>
                         <FormControl.Label>Investimento:</FormControl.Label>
-                        <Input ref={investimentoRef} value={investimento} placeholder="Ex.: 1.080,00" size={"lg"} backgroundColor={"white"} onChangeText={novoInvestimento => setInvestimento(novoInvestimento)} onKeyPress={(tecla) => mudarRef(tecla, observacoesRef)} />
+                        <Input ref={investimentoRef} value={investimento} placeholder="Ex.: 1.080,00" size={"lg"} backgroundColor={"white"} onChangeText={novoInvestimento => formatarInvestimento(novoInvestimento)} onKeyPress={(tecla) => mudarRef(tecla, observacoesRef)} />
                         {'investimento' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.investimento}</FormControl.ErrorMessage>
                         : null}
                     </FormControl>
                     <FormControl isInvalid={'observacoes' in erros}>
                         <FormControl.Label>Observações:</FormControl.Label>
-                        <TextArea ref={observacoesRef} value={observacoes} w={"100%"} h={100} backgroundColor={"white"} autoCompleteType={undefined} onChangeText={novaObservacao => setObservacoes(novaObservacao)} />
+                        <TextArea ref={observacoesRef} value={observacoes} w={"100%"} h={100} backgroundColor={"white"} autoCompleteType={undefined} onChangeText={novaObservacao => setObservacoes(novaObservacao)} onKeyPress={(tecla) => mudarRef(tecla, null)} />
                         {'observacoes' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.observacoes}</FormControl.ErrorMessage>
                         : null}

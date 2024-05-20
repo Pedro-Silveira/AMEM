@@ -1,3 +1,4 @@
+// Retorna uma notificação para os eventos cuja data esteja entre 30 dias ou menos.
 export default function dateCalculator(data: any) {
     const [dia, mes, ano] = data.split('/');
     const dataEvento = new Date(ano, mes - 1, dia).getTime();

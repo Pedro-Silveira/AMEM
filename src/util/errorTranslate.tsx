@@ -1,3 +1,4 @@
+// Traduz as mensagens de erro do firebase.
 export default function errorTranslate(erro: any){
     switch (erro) {
         case 'auth/email-already-in-use':

@@ -4,7 +4,7 @@ import { Box, Button, Divider, HStack, Icon, Input, Pressable, ScrollView, Skele
 import { onValue, ref } from "firebase/database";
 import { db } from "../services/firebaseConfig";
 import { useNavigation } from "@react-navigation/native";
-import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
+import { MaterialIcons, FontAwesome6 } from '@expo/vector-icons';
 
 const ControleUsuarios = () => {
     // Fixas
@@ -90,7 +90,7 @@ const ControleUsuarios = () => {
                                             <Text bold>{item.nome}</Text>
                                             <Text>{item.email}</Text>
                                             </VStack>
-                                            {item.permissao == "administrador" ? <Icon as={<FontAwesome5 name={"user-tie"} />} size={5} color="#bebebe" /> : item.permissao == "editor" ? <Icon as={<FontAwesome5 name={"user-edit"} />} size={5} color="#bebebe" /> : <Icon as={<FontAwesome5 name={"user"} />} size={5} color="#bebebe" />}
+                                            {item.permissao == "administrador" ? <Icon as={<FontAwesome6 name={"user-tie"} />} size={5} color="#bebebe" /> : item.permissao == "editor" ? <Icon as={<FontAwesome6 name={"user-pen"} />} size={5} color="#bebebe" /> : <Icon as={<FontAwesome6 name={"user"} />} size={5} color="#bebebe" />}
                                         </HStack>
                                     </Box>
                                 );

@@ -1,28 +1,22 @@
-import { onValue, ref } from "firebase/database";
 import { useEffect, useState } from "react";
+import { onValue, ref } from "firebase/database";
 import { auth, db } from "../services/firebaseConfig";
 
-const useUserPermission = () => {
-    const [userPermission, setUserPermission] = useState("");
+// Consulta no banco e retorna a permissão do usuário autenticado.
+const getUserPermission = () => {
+    const [permissaoUsuario, setPermissaoUsuario] = useState("");
 
     useEffect(() => {
-        const uid = auth.currentUser?.uid;
-        if (!uid) {
-            setUserPermission("");
-            return;
-        }
+        const queryUsuario = ref(db, "usuarios/" + auth.currentUser?.uid + "/permissao");
 
-        const queryUser = ref(db, "usuarios/" + uid + "/permissao");
-
-        const unsubscribe = onValue(queryUser, (snapshot) => {
+        onValue(queryUsuario, (snapshot) => {
             const permissao = snapshot.val();
-            setUserPermission(permissao !== null && permissao !== undefined ? permissao : "");
-        });
 
-        return () => unsubscribe();
+            setPermissaoUsuario(permissao);
+        });
     }, []);
 
-    return userPermission;
+    return permissaoUsuario;
 };
 
-export default useUserPermission;
+export default getUserPermission;

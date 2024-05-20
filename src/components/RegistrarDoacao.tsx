@@ -1,55 +1,50 @@
 import React, { useRef, useState } from "react";
 import { StyleSheet } from "react-native";
-import { AlertDialog, Box, Button, CheckIcon, FormControl, Icon, Input, Pressable, ScrollView, Select, Spinner, Text, useToast, WarningOutlineIcon } from "native-base";
-import { useNavigation } from "@react-navigation/native";
+import { Box, Button, FormControl, Icon, Input, Pressable, ScrollView, Select, Text, useToast, WarningOutlineIcon } from "native-base";
 import { db } from "../services/firebaseConfig";
 import { ref, push } from "firebase/database";
+import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from '@expo/vector-icons';
 import showToast from "../util/showToast";
 import errorTranslate from "../util/errorTranslate";
 import showLoading from "../util/showLoading";
 
-const styles = StyleSheet.create({
-    boxCentral: {
-        padding: 50
-    },
-    box1: {
-        marginBottom: 25
-    },
-    box2: {
-        flexDirection: "row",
-        alignItems: "center"
-    }
-});
-
 const RegistrarDoacao = ({ route }: { route: any }) => {
+    // Fixas
     const { evento } = route.params;
+    const navigation = useNavigation<any>();
+    const toast = useToast();
+
+    // Variáveis
+    const [uploading, setUploading] = useState(false);
+    const [erros, setErros] = useState({});
+
+    // Gets & Sets
     const [tipo, setTipo] = useState('');
     const [organizacao, setOrganizacao] = useState('');
     const [material, setMaterial] = useState('');
     const [quantidade, setQuantidade] = useState('');
     const [unidade, setUnidade] =  useState('');
-    const [erros, setErros] = useState({});
-    const navigation = useNavigation<any>();
-    const toast = useToast();
-    const [uploading, setUploading] = useState(false);
 
+    // Refs
     const tipoRef = useRef(null);
     const organizacaoRef = useRef(null);
     const materialRef = useRef(null);
     const quantidadeRef = useRef(null);
     const unidadeRef = useRef(null);
 
-    const handleKeyPress = (event: any, nextRef: any) => {
-        if (event.nativeEvent.key === 'Enter') {
-            if (nextRef) {
-                nextRef.current.focus();
+    // Muda o foco do formulário ao pressionar enter.
+    const mudarRef = (evento: any, proximaRef: any) => {
+        if (evento === "Enter" || evento.nativeEvent.key === "Enter") {
+            if (proximaRef) {
+                proximaRef.current.focus();
             } else {
                 validarDoacao();
             }
         }
     };
 
+    // Limpa os campos do formulário.
     const limpar = () => {
         setTipo('');
         setOrganizacao('');
@@ -59,12 +54,12 @@ const RegistrarDoacao = ({ route }: { route: any }) => {
         setErros({});
     };
 
+    // Valida os campos do formulário através de expressões regulares.
     const validarDoacao = () => {
         const organizacaoRegex = new RegExp(/^[^\s].*$/);
         const quantidadeRegex = new RegExp(/^\d+$/);
         let erros = 0;
 
-        setUploading(true);
         setErros({});
 
         if (tipo != "recebida" && tipo != "efetuada"){
@@ -117,7 +112,10 @@ const RegistrarDoacao = ({ route }: { route: any }) => {
         }
     };
 
+    // Registra a doação no banco de dados.
     const adicionarDoacao = () => {
+        setUploading(true);
+
         push(ref(db, 'eventos/' + evento.id + '/doacoes/'), {
             tipo: tipo,
             organizacao: organizacao,
@@ -146,72 +144,19 @@ const RegistrarDoacao = ({ route }: { route: any }) => {
                     <Text textAlign={"left"} fontSize={"lg"}>Preencha os campos abaixo para registrar uma nova doação em {evento.nome}.</Text>
                 </Box>
                 <Box style={styles.box1}>
-                    <FormControl isRequired isInvalid={'tipo' in erros}>
-                        <FormControl.Label>Tipo:</FormControl.Label>
-                        <Select
-                            ref={tipoRef}
-                            dropdownIcon={<Icon as={MaterialIcons} name="keyboard-arrow-down" color={"#bebebe"} mr={2} size={"xl"} />} 
-                            selectedValue={tipo} 
-                            onValueChange={novoTipo => setTipo(novoTipo)} 
-                            placeholder="Escolha um tipo..." 
-                            backgroundColor={"white"} 
-                            size={"lg"}
-                        >
-                            <Select.Item label="Recebida" value="recebida" />
-                            <Select.Item label="Efetuada" value="efetuada" />
-                        </Select>
-                        {'tipo' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.tipo}</FormControl.ErrorMessage> : null}
-                    </FormControl>
-                    <FormControl isRequired isInvalid={'organizacao' in erros}>
-                        <FormControl.Label>Organização:</FormControl.Label>
-                        <Input 
-                            ref={organizacaoRef}
-                            value={organizacao} 
-                            placeholder="Ex.: ONG Brasil" 
-                            onChangeText={novaOrganizacao => setOrganizacao(novaOrganizacao)} 
-                            backgroundColor={"white"} 
-                            size={"lg"}
-                            onKeyPress={(e) => handleKeyPress(e, materialRef)}
-                        />
-                        {'organizacao' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.organizacao}</FormControl.ErrorMessage> : null}
-                    </FormControl>
                     <FormControl isRequired isInvalid={'material' in erros}>
                         <FormControl.Label>Material:</FormControl.Label>
-                        <Input 
-                            ref={materialRef}
-                            value={material} 
-                            placeholder="Ex.: Cesta Básica" 
-                            onChangeText={novoMaterial => setMaterial(novoMaterial)} 
-                            backgroundColor={"white"} 
-                            size={"lg"}
-                            onKeyPress={(e) => handleKeyPress(e, quantidadeRef)}
-                        />
+                        <Input autoFocus value={material} ref={materialRef} onKeyPress={(tecla) => mudarRef(tecla, quantidadeRef)} placeholder="Ex.: Cesta Básica" onChangeText={novoMaterial => setMaterial(novoMaterial)} backgroundColor={"white"} size={"lg"}/>
                         {'material' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.material}</FormControl.ErrorMessage> : null}
                     </FormControl>
                     <FormControl isRequired isInvalid={'quantidade' in erros}>
                         <FormControl.Label>Quantidade:</FormControl.Label>
-                        <Input 
-                            ref={quantidadeRef}
-                            value={quantidade} 
-                            placeholder="Ex.: 25" 
-                            onChangeText={novaQuantidade => setQuantidade(novaQuantidade)} 
-                            backgroundColor={"white"} 
-                            size={"lg"}
-                            onKeyPress={(e) => handleKeyPress(e, unidadeRef)}
-                        />
+                        <Input value={quantidade} ref={quantidadeRef} onKeyPress={(tecla) => mudarRef(tecla, unidadeRef)} placeholder="Ex.: 25" onChangeText={novaQuantidade => setQuantidade(novaQuantidade)} backgroundColor={"white"} size={"lg"}/>
                         {'quantidade' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.quantidade}</FormControl.ErrorMessage> : null}
                     </FormControl>
-                    <FormControl isRequired isInvalid={'unidade' in erros}>
+                    <FormControl isInvalid={'unidade' in erros}>
                         <FormControl.Label>Unidade de Medida:</FormControl.Label>
-                        <Select 
-                            ref={unidadeRef}
-                            dropdownIcon={<Icon as={MaterialIcons} name="keyboard-arrow-down" color={"#bebebe"} mr={2} size={"xl"} />} 
-                            selectedValue={unidade} 
-                            onValueChange={novaUnidade => setUnidade(novaUnidade)} 
-                            placeholder="Escolha uma unidade de medida..." 
-                            backgroundColor={"white"} 
-                            size={"lg"}
-                        >
+                        <Select ref={unidadeRef} dropdownIcon={<Icon as={MaterialIcons} name="keyboard-arrow-down" color={"#bebebe"} mr={2} size={"xl"} />} selectedValue={unidade} onValueChange={novaUnidade => {setUnidade(novaUnidade); mudarRef("Enter", tipoRef)}} placeholder="Escolha uma unidade de medida..." backgroundColor={"white"} size={"lg"}>
                             <Select.Item label="Caixa" value="cx." />
                             <Select.Item label="Fardo" value="fdo." />
                             <Select.Item label="Galão" value="gal." />
@@ -225,6 +170,19 @@ const RegistrarDoacao = ({ route }: { route: any }) => {
                         </Select>
                         {'unidade' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.unidade}</FormControl.ErrorMessage> : null}
                     </FormControl>
+                    <FormControl isRequired isInvalid={'tipo' in erros}>
+                        <FormControl.Label>Tipo:</FormControl.Label>
+                        <Select ref={tipoRef} dropdownIcon={<Icon as={MaterialIcons} name="keyboard-arrow-down" color={"#bebebe"} mr={2} size={"lg"} />} selectedValue={tipo} onValueChange={novoTipo => {setTipo(novoTipo); mudarRef("Enter", organizacaoRef)}} placeholder="Escolha um tipo..." backgroundColor={"white"} size={"lg"}>
+                            <Select.Item label="Recebida" value="recebida" />
+                            <Select.Item label="Efetuada" value="efetuada" />
+                        </Select>
+                        {'tipo' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.tipo}</FormControl.ErrorMessage> : null}
+                    </FormControl>
+                    <FormControl isRequired isInvalid={'organizacao' in erros}>
+                        <FormControl.Label>Organização:</FormControl.Label>
+                        <Input value={organizacao} ref={organizacaoRef} onKeyPress={(tecla) => mudarRef(tecla, null)} placeholder="Ex.: ONG Brasil" onChangeText={novaOrganizacao => setOrganizacao(novaOrganizacao)} backgroundColor={"white"} size={"lg"}/>
+                        {'organizacao' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.organizacao}</FormControl.ErrorMessage> : null}
+                    </FormControl>
                 </Box>
                 <Box flexDirection={"row"}>
                     <Button size={"lg"} backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}} flex={1} marginRight={1} onPress={validarDoacao}>Registrar</Button>
@@ -234,5 +192,18 @@ const RegistrarDoacao = ({ route }: { route: any }) => {
         </ScrollView>
     );
 };
+
+const styles = StyleSheet.create({
+    boxCentral: {
+        padding: 50
+    },
+    box1: {
+        marginBottom: 25
+    },
+    box2: {
+        flexDirection: "row",
+        alignItems: "center"
+    }
+});
 
 export default RegistrarDoacao;

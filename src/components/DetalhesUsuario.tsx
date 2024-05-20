@@ -25,6 +25,9 @@ const DetalhesUsuario = ({ route }: { route: any }) => {
     const [email, setEmail] = useState(usuario.email);
     const [permissao, setPermissao] = useState(usuario.permissao);
 
+    //Refs
+    const alertRef = React.useRef(null);
+
     // Valida os campos do formulário através de expressões regulares.
     const validarUsuario = () => {
         let erros = 0;
@@ -109,8 +112,9 @@ const DetalhesUsuario = ({ route }: { route: any }) => {
                         : null }
                     </FormControl>
                     <Box flexDirection={"row"} mt={25}>
-                        <Button onPress={() => setIsOpen(!isOpen)} marginRight={2} leftIcon={<Icon as={MaterialIcons} name="delete" />} size={"sm"} backgroundColor={"#E11D48"} _hover={{backgroundColor: "#BE123C"}}>Excluir</Button>
-                        <AlertDialog leastDestructiveRef={React.useRef(null)} isOpen={isOpen} onClose={() => setIsOpen(false)}>
+                    <Button onPress={validarUsuario} leftIcon={<Icon as={MaterialIcons} name="save" />} size={"sm"} backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}} marginRight={2}>Salvar</Button>
+                        <Button onPress={() => setIsOpen(!isOpen)} leftIcon={<Icon as={MaterialIcons} name="delete" />} size={"sm"} backgroundColor={"#E11D48"} _hover={{backgroundColor: "#BE123C"}}>Excluir</Button>
+                        <AlertDialog leastDestructiveRef={alertRef} isOpen={isOpen} onClose={() => setIsOpen(false)}>
                             <AlertDialog.Content>
                             <AlertDialog.CloseButton />
                             <AlertDialog.Header>Excluir Usuário</AlertDialog.Header>
@@ -119,7 +123,7 @@ const DetalhesUsuario = ({ route }: { route: any }) => {
                             </AlertDialog.Body>
                             <AlertDialog.Footer>
                                 <Button.Group space={2}>
-                                <Button variant="ghost" colorScheme="coolGray" onPress={() => setIsOpen(false)} ref={React.useRef(null)}>
+                                <Button variant="ghost" colorScheme="coolGray" onPress={() => setIsOpen(false)} ref={alertRef}>
                                     Cancelar
                                 </Button>
                                 <Button colorScheme="danger" onPress={excluirUsuario}>
@@ -129,7 +133,6 @@ const DetalhesUsuario = ({ route }: { route: any }) => {
                             </AlertDialog.Footer>
                             </AlertDialog.Content>
                         </AlertDialog>
-                        <Button onPress={validarUsuario} leftIcon={<Icon as={MaterialIcons} name="save" />} size={"sm"} backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}}>Salvar</Button>
                     </Box>
                 </Box>
             </Box>
