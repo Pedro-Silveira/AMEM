@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { StyleSheet } from "react-native";
 import { AlertDialog, Box, Button, FormControl, Icon, Input, Pressable, ScrollView, Select, Text, useToast, WarningOutlineIcon } from "native-base";
-import { db } from "../services/firebaseConfig";
+import { auth, db } from "../services/firebaseConfig";
 import { ref, update, remove } from "firebase/database";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from '@expo/vector-icons';
 import showToast from "../util/showToast";
 import errorTranslate from "../util/errorTranslate";
 import showLoading from "../util/showLoading";
+import { deleteUser } from "firebase/auth";
 
 const DetalhesUsuario = ({ route }: { route: any }) => {
     // Fixas
@@ -66,18 +67,31 @@ const DetalhesUsuario = ({ route }: { route: any }) => {
 
     // Remove o registro do banco de dados.
     const excluirUsuario = () => {
-        setUploading(true);
-
-        remove(ref(db, 'usuarios/' + usuario.id))
-        .then(() => {
-            showToast(toast, "#404040", "O usuário foi excluído com sucesso!");
-            navigation.navigate("Controle de Usuários - AMEM");
-        })
-        .catch((error) => {
-            showToast(toast, "#E11D48", errorTranslate(error));
-        }).finally(() => {
-            setUploading(false);
-        });
+        if ( auth.currentUser?.uid == usuario.id ) {
+            setUploading(true);
+            
+            remove(ref(db, 'usuarios/' + usuario.id))
+            .then(() => {
+                if ( auth.currentUser ) {
+                    deleteUser(auth.currentUser)
+                    .then(() => {
+                        showToast(toast, "#404040", "O usuário foi excluído com sucesso!");
+                    }).catch((error) => {
+                        showToast(toast, "#E11D48", errorTranslate(error));
+                    }).finally(() => {
+                        setUploading(false);
+                    });
+                } else {
+                    showToast(toast, "#E11D48", "Ocorreu um erro. Por favor, tente novamente.");
+                    setUploading(false);
+                };
+            }).catch((error) => {
+                showToast(toast, "#E11D48", errorTranslate(error));
+                setUploading(false);
+            });
+        } else {
+            showToast(toast, "#E11D48", "Você só pode excluir a sua própria conta!");
+        };
     };
 
     // Cria os elementos visuais em tela.
