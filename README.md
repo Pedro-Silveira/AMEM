@@ -6,7 +6,7 @@
 
 ![Tela real capturada em 16/10/2023.](https://drive.google.com/uc?export=view&id=157rHM-EQwLcLZu5sGBsSq6sfJDRh3ZH3)
 <img src="https://drive.google.com/uc?export=view&id=1ib-k4t7i3frAHR_OaYfizcnU_Q0XhV4c" width="20%"></img><img src="https://drive.google.com/uc?export=view&id=1HwghGqEge6nW9BqJeu7FH3xjPN5SA4GE" width="20%"></img><img src="https://drive.google.com/uc?export=view&id=1rZDNfoWzKAB1I8ZKsJGqgePOGSZ2GWPP" width="20%"></img><img src="https://drive.google.com/uc?export=view&id=1B2YDRbsm_lWr__VzkjxMUwQBc-P_ZQtp" width="20%"></img><img src="https://drive.google.com/uc?export=view&id=1mOFFBTCYNhzx1PQ0unXhDszJUdO3NFQw" width="20%"></img>
-> Sistema de gerenciamento de eventos desenvolvido para a Pastoral Universitária da Universidade La Salle, com o objetivo de substituir as planilhas de controle de evento e de registro de doações e voluntários por um método digital.
+> Sistema de gerenciamento de eventos desenvolvido para a Pastoral Universitária da Universidade La Salle, com o objetivo de substituir as planilhas de controle de eventos por um método digital.
 
 ## 📝 Documentação
 
