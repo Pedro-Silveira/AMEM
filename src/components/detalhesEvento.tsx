@@ -27,7 +27,8 @@ const DetalhesEvento = ({ route }: { route: any }) => {
 
     // Gets & Sets
     const [nome, setNome] = useState(evento.nome);
-    const [data, setData] = useState(evento.data);
+    const [dataInicial, setDataInicial] = useState(evento.dataInicial);
+    const [dataFinal, setDataFinal] = useState(evento.dataFinal);
     const [local, setLocal] = useState(evento.local);
     const [investimento, setInvestimento] = useState(evento.investimento);
     const [observacoes, setObservacoes] = useState(evento.observacoes);
@@ -40,7 +41,8 @@ const DetalhesEvento = ({ route }: { route: any }) => {
     //Refs
     const alertRef = React.useRef(null);
     const nomeRef = useRef(null);
-    const dataRef = useRef(null);
+    const dataInicialRef = useRef(null);
+    const dataFinalRef = useRef(null);
     const localRef = useRef(null);
     const investimentoRef = useRef(null);
     const observacoesRef = useRef(null);
@@ -57,15 +59,24 @@ const DetalhesEvento = ({ route }: { route: any }) => {
     };
 
     // Formata a data conforme o usuário digita.
-    const formatarData = (valor: any) => {
+    const formatarData = (valor: any, tipo: any) => {
         const novaData = valor.replace(/\D/g, "");
 
         if (novaData.length <= 8) {
             const dataFormatada = novaData.replace(/(\d{2})(\d{2})(\d{4})/, "$1/$2/$3");
 
-            setData(dataFormatada);
+            if (tipo == 'I') {
+                setDataInicial(dataFormatada);
+            } else {
+                setDataFinal(dataFormatada);
+            }
+            
         } else {
-            setData(valor);
+            if (tipo == 'I') {
+                setDataInicial(valor);
+            } else {
+                setDataFinal(valor);
+            }
         }
     };
 
@@ -175,10 +186,19 @@ const DetalhesEvento = ({ route }: { route: any }) => {
             erros++;
         }
 
-        if (!dataRegex.test(data)){
+        if (!dataRegex.test(dataInicial)){
             setErros(errosAnteriores => ({
                 ...errosAnteriores,
-                data: 'A data precisa seguir o formato dd/mm/aaaa.',
+                dataInicial: 'A data precisa seguir o formato dd/mm/aaaa.',
+            }));
+
+            erros++;
+        }
+
+        if (!dataRegex.test(dataFinal)){
+            setErros(errosAnteriores => ({
+                ...errosAnteriores,
+                dataFinal: 'A data precisa seguir o formato dd/mm/aaaa.',
             }));
 
             erros++;
@@ -213,7 +233,8 @@ const DetalhesEvento = ({ route }: { route: any }) => {
 
         update(ref(db, 'eventos/' + evento.id), {
             nome: nome,
-            data: data,
+            dataInicial: dataInicial,
+            dataFinal: dataFinal,
             local: local,
             investimento: investimento,
             observacoes: observacoes
@@ -276,17 +297,24 @@ const DetalhesEvento = ({ route }: { route: any }) => {
                 <Box style={styles.box2}>
                     <FormControl isRequired isInvalid={'nome' in erros}>
                         <FormControl.Label>Nome:</FormControl.Label>
-                        <Input value={nome} ref={nomeRef} onKeyPress={(tecla) => mudarRef(tecla, dataRef)} placeholder="Ex.: Ação de Graças" onChangeText={novoNome => setNome(novoNome)} backgroundColor={"white"} size={"lg"} />
+                        <Input value={nome} ref={nomeRef} onKeyPress={(tecla) => mudarRef(tecla, dataInicialRef)} placeholder="Ex.: Ação de Graças" onChangeText={novoNome => setNome(novoNome)} backgroundColor={"white"} size={"lg"} />
                         {'nome' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.nome}</FormControl.ErrorMessage>
                         : null }
                     </FormControl>
-                    <FormControl isRequired isInvalid={'data' in erros}>
-                        <FormControl.Label>Data:</FormControl.Label>
-                        <Input value={data} ref={dataRef} onKeyPress={(tecla) => mudarRef(tecla, localRef)} placeholder="Ex.: 02/08/1972" onChangeText={novaData => formatarData(novaData)} backgroundColor={"white"} size={"lg"}/>
-                        {'data' in erros ?
-                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.data}</FormControl.ErrorMessage>
-                        : null}
+                    <FormControl isRequired isInvalid={'dataInicial' in erros}>
+                        <FormControl.Label>Data Inicial:</FormControl.Label>
+                        <Input ref={dataInicialRef} value={dataInicial} placeholder="Ex.: 02/08/1972" size={"lg"} backgroundColor={"white"} onChangeText={novaDataInicial => formatarData(novaDataInicial, 'I')} onKeyPress={(tecla) => mudarRef(tecla, dataFinalRef)} />
+                        {'dataInicial' in erros ?
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.dataInicial}</FormControl.ErrorMessage>
+                        : null }
+                    </FormControl>
+                    <FormControl isRequired isInvalid={'dataFinal' in erros}>
+                        <FormControl.Label>Data Final:</FormControl.Label>
+                        <Input ref={dataFinalRef} value={dataFinal} placeholder="Ex.: 09/07/2024" size={"lg"} backgroundColor={"white"} onChangeText={novaDataFinal => formatarData(novaDataFinal, 'F')} onKeyPress={(tecla) => mudarRef(tecla, localRef)} />
+                        {'dataFinal' in erros ?
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.dataFinal}</FormControl.ErrorMessage>
+                        : null }
                     </FormControl>
                     <FormControl isRequired isInvalid={'local' in erros}>
                         <FormControl.Label>Local:</FormControl.Label>

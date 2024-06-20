@@ -74,14 +74,14 @@ const ControleEventos = () => {
                         id: key,
                         ...dados[key]
                     }))
-                    .filter((evento: { nome: any; status: any; data: any; }) => 
+                    .filter((evento: { nome: any; status: any; dataInicial: any; dataFinal: any; }) => 
                         (filtroNome === "" || evento.nome.toLowerCase().includes(filtroNome.toLowerCase())) && 
                         (filtroStatus === "" || evento.status === filtroStatus) && 
-                        (filtroDataInicial === "" || evento.data.split('/').reverse().join('-') >= filtroDataInicial.split('/').reverse().join('-')) && 
-                        (filtroDataFinal === "" || evento.data.split('/').reverse().join('-') <= filtroDataFinal.split('/').reverse().join('-')))
+                        (filtroDataInicial === "" || evento.dataInicial.split('/').reverse().join('-') >= filtroDataInicial.split('/').reverse().join('-')) && 
+                        (filtroDataFinal === "" || evento.dataFinal.split('/').reverse().join('-') <= filtroDataFinal.split('/').reverse().join('-')))
                     .sort((a, b) => {
-                        const [dia, mes, ano] = a.data.split('/');
-                        const [dia2, mes2, ano2] = b.data.split('/');
+                        const [dia, mes, ano] = a.dataInicial.split('/');
+                        const [dia2, mes2, ano2] = b.dataInicial.split('/');
                         const dataA = new Date(`${mes}/${dia}/${ano}`);
                         const dataB = new Date(`${mes2}/${dia2}/${ano2}`);
 
@@ -137,7 +137,7 @@ const ControleEventos = () => {
                                             {item.nome}
                                         </Text>
                                         <Text>
-                                            {item.data}
+                                            {item.dataInicial} - {item.dataFinal}
                                         </Text>
                                     </VStack>
                                     <Icon as={MaterialIcons} name="navigate-next" size={5} color={"#bebebe"} />

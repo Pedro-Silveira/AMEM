@@ -32,6 +32,6 @@ export default function errorTranslate(erro: any){
         case 'OVER_QUOTA':
             return 'O banco de dados atingiu a cota máxima permitida. Informe um administrador!';
         default:
-            return 'Ocorreu um erro. Por favor, tente novamente.';
+            return 'Ocorreu um erro: ' + erro;
     };
 };

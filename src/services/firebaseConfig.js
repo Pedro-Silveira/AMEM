@@ -7,10 +7,10 @@ const firebaseConfig = {
   apiKey: "",
   authDomain: "",
   projectId: "",
-  storageBucket: "",
+  storageBucket: ".appspot.com",
   messagingSenderId: "",
-  appId: "",
-  databaseURL: "",
+  appId: "1::web:1f9bcd2474a53c57a85880",
+  databaseURL: "https://-default-rtdb.firebaseio.com",
   measurementId: ""
 };
 

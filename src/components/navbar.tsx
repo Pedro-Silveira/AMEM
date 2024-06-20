@@ -32,14 +32,14 @@ const Navbar = () => {
                     ...data[key]
                 }))
                 .filter(evento => {
-                    const parts = evento.data.split('/');
+                    const parts = evento.dataInicial.split('/');
                     const eventoDate = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
                 
-                    return eventoDate <= hoje && evento.status == "Planejado";
+                    return eventoDate <= hoje && eventoDate > new Date() && evento.status == "Planejado";
                 })
                 .sort((a, b) => {
-                    const [dia, mes, ano] = a.data.split('/');
-                    const [dia2, mes2, ano2] = b.data.split('/');
+                    const [dia, mes, ano] = a.dataInicial.split('/');
+                    const [dia2, mes2, ano2] = b.dataInicial.split('/');
                     const dataA = new Date(`${mes}/${dia}/${ano}`);
                     const dataB = new Date(`${mes2}/${dia2}/${ano2}`);
 
@@ -116,7 +116,7 @@ const Navbar = () => {
                                         <Badge colorScheme="danger" rounded="full" p={1} mr={2} variant="solid" />
                                         <Text bold>{item.nome}</Text>
                                     </Box>
-                                    <Text mb={3}>{calcularDias(item.data)}</Text>
+                                    <Text mb={3}>{calcularDias(item.dataInicial)}</Text>
                                     <Divider mb={3} />
                                 </Box>
                             ))

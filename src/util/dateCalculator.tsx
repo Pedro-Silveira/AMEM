@@ -6,9 +6,8 @@ export default function dateCalculator(data: any) {
     const dias = Math.round((dataEvento - hoje) / (1000 * 3600 * 24));
 
     if (dias < 30 && dias >= 0) {
-        return "Falta(m) " + dias + " dia(s) para o evento!";
-    } else if (dias < 0) {
-        return "O evento não foi encerrado!";
+        return "Falta(m) " + ( dias + 1 ) + " dia(s) para o evento!";
     }
-    return "";
+
+    return null;
 };

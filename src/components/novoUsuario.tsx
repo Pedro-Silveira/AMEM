@@ -133,12 +133,12 @@ const NovoUsuario = () => {
                         showToast(toast, "#404040", "O usuário foi cadastrado com sucesso!");
                         auth.signOut();
                     }).catch((error) => {
-                        showToast(toast, "#E11D48", errorTranslate(error));
+                        showToast(toast, "#E11D48", errorTranslate(error.code));
                     }).finally(() => {
                         setUploading(false);
                     });
                 }).catch((error) => {
-                    showToast(toast, "#E11D48", errorTranslate(error));
+                    showToast(toast, "#E11D48", errorTranslate(error.code));
                     setUploading(false);
                 });
             } else {
@@ -147,7 +147,7 @@ const NovoUsuario = () => {
             }
         })
         .catch((error) => {
-            showToast(toast, "#E11D48", errorTranslate(error));
+            showToast(toast, "#E11D48", errorTranslate(error.code));
             setUploading(false);
         });
     };

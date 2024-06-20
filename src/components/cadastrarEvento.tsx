@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { StyleSheet } from "react-native";
-import { Box, Button, Checkbox, FormControl, HStack, Icon, Input, Pressable, ScrollView, Skeleton, Text, TextArea, Tooltip, useToast, VStack, WarningOutlineIcon } from "native-base";
+import { Box, Button, Checkbox, FormControl, HStack, Icon, Input, Modal, Pressable, ScrollView, Skeleton, Text, TextArea, Tooltip, useClipboard, useToast, VStack, WarningOutlineIcon } from "native-base";
 import { db } from "../services/firebaseConfig";
 import { ref, push, onValue } from "firebase/database";
 import { useNavigation } from "@react-navigation/native";
@@ -14,15 +14,19 @@ const CadastrarEvento = () => {
     // Fixas
     const navigation = useNavigation<any>();
     const toast = useToast();
+    const { onCopy } = useClipboard();
 
     // Variáveis
     const [carregando, setCarregando] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [erros, setErros] = useState({});
+    const [showModal, setShowModal] = useState(false);
+    const [show, setShow] = useState(false);
 
     // Gets & Sets
     const [nome, setNome] = useState('');
-    const [data, setData] = useState('');
+    const [dataInicial, setDataInicial] = useState('');
+    const [dataFinal, setDataFinal] = useState('');
     const [local, setLocal] = useState('');
     const [investimento, setInvestimento] = useState('');
     const [usuarios, setUsuarios] =  useState<string[]>([]);
@@ -31,7 +35,8 @@ const CadastrarEvento = () => {
 
     // Refs
     const nomeRef = useRef(null);
-    const dataRef = useRef(null);
+    const dataInicialRef = useRef(null);
+    const dataFinalRef = useRef(null);
     const localRef = useRef(null);
     const investimentoRef = useRef(null);
     const observacoesRef = useRef(null);
@@ -48,15 +53,24 @@ const CadastrarEvento = () => {
     };
 
     // Formata a data conforme o usuário digita.
-    const formatarData = (valor: any) => {
+    const formatarData = (valor: any, tipo: any) => {
         const novaData = valor.replace(/\D/g, "");
 
         if (novaData.length <= 8) {
             const dataFormatada = novaData.replace(/(\d{2})(\d{2})(\d{4})/, "$1/$2/$3");
 
-            setData(dataFormatada);
+            if (tipo == 'I') {
+                setDataInicial(dataFormatada);
+            } else {
+                setDataFinal(dataFormatada);
+            }
+            
         } else {
-            setData(valor);
+            if (tipo == 'I') {
+                setDataInicial(valor);
+            } else {
+                setDataFinal(valor);
+            }
         }
     };
 
@@ -85,7 +99,8 @@ const CadastrarEvento = () => {
     // Limpa os campos do formulário.
     const limpar = () => {
         setNome('');
-        setData('');
+        setDataInicial('');
+        setDataFinal('');
         setLocal('');
         setInvestimento('');
         setObservacoes('');
@@ -169,10 +184,19 @@ const CadastrarEvento = () => {
             erros++;
         }
 
-        if (!dataRegex.test(data)){
+        if (!dataRegex.test(dataInicial)){
             setErros(errosAnteriores => ({
                 ...errosAnteriores,
-                data: 'A data precisa seguir o formato dd/mm/aaaa.',
+                dataInicial: 'A data precisa seguir o formato dd/mm/aaaa.',
+            }));
+
+            erros++;
+        }
+
+        if (!dataRegex.test(dataFinal)){
+            setErros(errosAnteriores => ({
+                ...errosAnteriores,
+                dataFinal: 'A data precisa seguir o formato dd/mm/aaaa.',
             }));
 
             erros++;
@@ -197,24 +221,25 @@ const CadastrarEvento = () => {
         }
 
         if ( erros == 0 ) {
-            adicionarEvento();
+            setShowModal(true);
         }
     };
 
     // Adiciona o registro no banco de dados.
-    const adicionarEvento = () => {
+    const adicionarEvento = (tipo: any) => {
         setUploading(true);
 
         push(ref(db, 'eventos/'), {
             nome: nome,
-            data: data,
+            dataInicial: dataInicial,
+            dataFinal: dataFinal,
             local: local,
             investimento: investimento,
             observacoes: observacoes,
             status: "Planejado"
         }).then(() => {
-            usuarios.length != 0 ?
-                sendMail(usuarios, "Novo Evento: " + nome, "Olá, Prezado(s)! \n\nA pastoral universitária informa que o evento " + nome + " está sendo planejado para ocorrer no dia " + data + ". Sendo assim, solicitamos a provisão dos seguintes recursos:\n\nLocal do evento: " + local + "\nInvestimento Inicial: " + investimento + "\nObservações: " + observacoes + "\n\nAguardo retorno!")
+            tipo == 'E' ?
+                sendMail(usuarios, "Novo Evento: " + nome, "Olá, Prezado(s)! \n\nA pastoral universitária informa que o evento " + nome + " está sendo planejado para ocorrer entre os dias " + dataInicial + " e " + dataFinal + ". Sendo assim, solicitamos a provisão dos seguintes recursos:\n\nLocal do evento: " + local + "\nInvestimento Inicial: " + investimento + "\nObservações: " + observacoes + "\n\nAguardo retorno!")
             : null;
 
             showToast(toast, "#404040", "O evento foi cadastrado com sucesso!");
@@ -240,16 +265,23 @@ const CadastrarEvento = () => {
                 <Box style={styles.box1}>
                     <FormControl isRequired isInvalid={'nome' in erros}>
                         <FormControl.Label>Nome:</FormControl.Label>
-                        <Input autoFocus ref={nomeRef} value={nome} placeholder="Ex.: Ação de Graças" size={"lg"} backgroundColor={"white"} onChangeText={novoNome => setNome(novoNome)} onKeyPress={(tecla) => mudarRef(tecla, dataRef)} />
+                        <Input autoFocus ref={nomeRef} value={nome} placeholder="Ex.: Ação de Graças" size={"lg"} backgroundColor={"white"} onChangeText={novoNome => setNome(novoNome)} onKeyPress={(tecla) => mudarRef(tecla, dataInicialRef)} />
                         {'nome' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.nome}</FormControl.ErrorMessage>
                         : null }
                     </FormControl>
-                    <FormControl isRequired isInvalid={'data' in erros}>
-                        <FormControl.Label>Data:</FormControl.Label>
-                        <Input ref={dataRef} value={data} placeholder="Ex.: 02/08/1972" size={"lg"} backgroundColor={"white"} onChangeText={novaData => formatarData(novaData)} onKeyPress={(tecla) => mudarRef(tecla, localRef)} />
-                        {'data' in erros ?
-                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.data}</FormControl.ErrorMessage>
+                    <FormControl isRequired isInvalid={'dataInicial' in erros}>
+                        <FormControl.Label>Data Inicial:</FormControl.Label>
+                        <Input ref={dataInicialRef} value={dataInicial} placeholder="Ex.: 02/08/1972" size={"lg"} backgroundColor={"white"} onChangeText={novaDataInicial => formatarData(novaDataInicial, 'I')} onKeyPress={(tecla) => mudarRef(tecla, dataFinalRef)} />
+                        {'dataInicial' in erros ?
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.dataInicial}</FormControl.ErrorMessage>
+                        : null }
+                    </FormControl>
+                    <FormControl isRequired isInvalid={'dataFinal' in erros}>
+                        <FormControl.Label>Data Final:</FormControl.Label>
+                        <Input ref={dataFinalRef} value={dataFinal} placeholder="Ex.: 09/07/2024" size={"lg"} backgroundColor={"white"} onChangeText={novaDataFinal => formatarData(novaDataFinal, 'F')} onKeyPress={(tecla) => mudarRef(tecla, localRef)} />
+                        {'dataFinal' in erros ?
+                            <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.dataFinal}</FormControl.ErrorMessage>
                         : null }
                     </FormControl>
                     <FormControl isRequired isInvalid={'local' in erros}>
@@ -290,6 +322,39 @@ const CadastrarEvento = () => {
                     <Button size={"lg"} backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}} flex={1} marginRight={1} onPress={validarEvento}>Cadastrar</Button>
                     <Button size={"lg"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} flex={1} marginLeft={1} onPress={limpar}>Limpar</Button>
                 </Box>
+                <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
+                    <Modal.Content maxWidth="400px">
+                        <Modal.CloseButton />
+                        <Modal.Header>Enviar e-mail?</Modal.Header>
+                        <Modal.Body>
+                            <Text mb={3}>Envie um e-mail para os usuários envolvidos ou apenas cadastre o evento.</Text>
+                            <Box flexDir={"row"} mb={2}>
+                                <Input color={"#bebebe"} flex={1} size={"sm"} mr={2} isDisabled value={usuarios.toString()} />
+                                <Tooltip label="Copiar" openDelay={500}>
+                                    <Button onPress={() => onCopy(usuarios.toString())} leftIcon={<Icon as={MaterialIcons} name="content-copy" />} size={"sm"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} />
+                                </Tooltip>
+                            </Box>
+                            <Box flexDir={"row"} mb={2}>
+                                <Input color={"#bebebe"} flex={1} size={"sm"} mr={2} isDisabled value={"Novo Evento: " + nome} />
+                                <Tooltip label="Copiar" openDelay={500}>
+                                    <Button onPress={() => onCopy("Novo Evento: " + nome)} leftIcon={<Icon as={MaterialIcons} name="content-copy" />} size={"sm"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} />
+                                </Tooltip>
+                            </Box>
+                            <Box flexDir={"row"} mb={3}>
+                                <TextArea color={"#bebebe"} flex={1} size={"sm"} mr={2} isDisabled value={"Olá, Prezado(s)! \n\nA pastoral universitária informa que o evento " + nome + " está sendo planejado para ocorrer entre os dias " + dataInicial + " e " + dataFinal + ". Sendo assim, solicitamos a provisão dos seguintes recursos:\n\nLocal do evento: " + local + "\nInvestimento Inicial: " + investimento + "\nObservações: " + observacoes + "\n\nAguardo retorno!"} autoCompleteType={undefined} />
+                                <Tooltip label="Copiar" openDelay={500}>
+                                    <Button onPress={() => onCopy("Olá, Prezado(s)! \n\nA pastoral universitária informa que o evento " + nome + " está sendo planejado para ocorrer entre os dias " + dataInicial + " e " + dataFinal + ". Sendo assim, solicitamos a provisão dos seguintes recursos:\n\nLocal do evento: " + local + "\nInvestimento Inicial: " + investimento + "\nObservações: " + observacoes + "\n\nAguardo retorno!")} leftIcon={<Icon as={MaterialIcons} name="content-copy" />} size={"sm"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} />
+                                </Tooltip>
+                            </Box>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button.Group space={2}>
+                                <Button backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}} onPress={() => {adicionarEvento('E')}}>Enviar</Button>
+                                <Button backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}} onPress={() => {adicionarEvento('C')}}>Cadastrar</Button>
+                            </Button.Group>
+                        </Modal.Footer>
+                    </Modal.Content>
+                </Modal>
             </Box>
         </ScrollView>
     );
