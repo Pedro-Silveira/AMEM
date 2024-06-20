@@ -1,7 +1,7 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
 # database connection
-src/services/firebaseConfig.js
+src/services/
 
 # dependencies
 node_modules/
