@@ -27,3 +27,5 @@ Para o sofware funcionar corretamente, você precisa ter instalado:
 * React Native Web: `~0.19.6`;
 * React Navigation/Native: `^6.1.17`; e
 * Typescript `^5.1.3`.
+
+**Observação:** Estando na raíz do projeto, execute o comando ```cp src/services/.firebaseConfig.js src/services/firebaseConfig.js``` e configure o arquivo para os dados de acesso do seu banco no Firebase.
