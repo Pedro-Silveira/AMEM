@@ -90,8 +90,8 @@ const ListaDoacoes = () => {
                                     <Box bg={isHovered ? "coolGray.100" : null} rounded={isHovered ? 5 : 0} key={index} borderBottomWidth={1} borderBottomColor={"#D4D4D4"} py="2" pl="4" pr={5}>
                                         <HStack space={[2, 3]} justifyContent="space-between" alignItems={"center"}>
                                             <VStack>
-                                                <Text bold>{item.organizacao}</Text>
-                                                <Text>{item.quantidade} {item.unidade} {item.material}.</Text>
+                                                <Text bold>{item.quantidade} {item.unidade} de {item.material}</Text>
+                                                <Text>por {item.organizacao}.</Text>
                                             </VStack>
                                             {item.tipo == "efetuada" ? <Icon as={<MaterialIcons name={"arrow-circle-right"} />} size={5} color="#E11D48" /> : <Icon as={<MaterialIcons name={"arrow-circle-left"} />} size={5} color="#16A34A" />}
                                         </HStack>

@@ -156,17 +156,17 @@ const DetalhesDoacao = ({ route }: { route: any }) => {
                 <Box style={styles.box2}>
                     <FormControl isRequired isInvalid={'material' in erros}>
                         <FormControl.Label>Material:</FormControl.Label>
-                        <Input value={material} ref={materialRef} onKeyPress={(tecla) => mudarRef(tecla, quantidadeRef)} placeholder="Ex.: Cesta Básica" onChangeText={novoMaterial => setMaterial(novoMaterial)} backgroundColor={"white"} size={"lg"}/>
+                        <Input value={material} ref={materialRef} isDisabled={userPermission == "editor" && evento.status == "Encerrado" || userPermission == "usuario"} onKeyPress={(tecla) => mudarRef(tecla, quantidadeRef)} placeholder="Ex.: Cesta Básica" onChangeText={novoMaterial => setMaterial(novoMaterial)} backgroundColor={"white"} size={"lg"}/>
                         {'material' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.material}</FormControl.ErrorMessage> : null}
                     </FormControl>
                     <FormControl isRequired isInvalid={'quantidade' in erros}>
                         <FormControl.Label>Quantidade:</FormControl.Label>
-                        <Input value={quantidade} ref={quantidadeRef} onKeyPress={(tecla) => mudarRef(tecla, unidadeRef)} placeholder="Ex.: 25" onChangeText={novaQuantidade => setQuantidade(novaQuantidade)} backgroundColor={"white"} size={"lg"}/>
+                        <Input value={quantidade} ref={quantidadeRef} isDisabled={userPermission == "editor" && evento.status == "Encerrado" || userPermission == "usuario"} onKeyPress={(tecla) => mudarRef(tecla, unidadeRef)} placeholder="Ex.: 25" onChangeText={novaQuantidade => setQuantidade(novaQuantidade)} backgroundColor={"white"} size={"lg"}/>
                         {'quantidade' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.quantidade}</FormControl.ErrorMessage> : null}
                     </FormControl>
                     <FormControl isInvalid={'unidade' in erros}>
                         <FormControl.Label>Unidade de Medida:</FormControl.Label>
-                        <Select ref={unidadeRef} dropdownIcon={<Icon as={MaterialIcons} name="keyboard-arrow-down" color={"#bebebe"} mr={2} size={"xl"} />} selectedValue={unidade} onValueChange={novaUnidade => {setUnidade(novaUnidade); mudarRef("Enter", tipoRef)}} placeholder="Escolha uma unidade de medida..." backgroundColor={"white"} size={"lg"}>
+                        <Select ref={unidadeRef} isDisabled={userPermission == "editor" && evento.status == "Encerrado" || userPermission == "usuario"} dropdownIcon={<Icon as={MaterialIcons} name="keyboard-arrow-down" color={"#bebebe"} mr={2} size={"xl"} />} selectedValue={unidade} onValueChange={novaUnidade => {setUnidade(novaUnidade); mudarRef("Enter", tipoRef)}} placeholder="Escolha uma unidade de medida..." backgroundColor={"white"} size={"lg"}>
                             <Select.Item label="Caixa" value="cx." />
                             <Select.Item label="Fardo" value="fdo." />
                             <Select.Item label="Galão" value="gal." />
@@ -182,7 +182,7 @@ const DetalhesDoacao = ({ route }: { route: any }) => {
                     </FormControl>
                     <FormControl isRequired isInvalid={'tipo' in erros}>
                         <FormControl.Label>Tipo:</FormControl.Label>
-                        <Select ref={tipoRef} dropdownIcon={<Icon as={MaterialIcons} name="keyboard-arrow-down" color={"#bebebe"} mr={2} size={"lg"} />} selectedValue={tipo} onValueChange={novoTipo => {setTipo(novoTipo); mudarRef("Enter", organizacaoRef)}} placeholder="Escolha um tipo..." backgroundColor={"white"} size={"lg"}>
+                        <Select ref={tipoRef} isDisabled={userPermission == "editor" && evento.status == "Encerrado" || userPermission == "usuario"} dropdownIcon={<Icon as={MaterialIcons} name="keyboard-arrow-down" color={"#bebebe"} mr={2} size={"lg"} />} selectedValue={tipo} onValueChange={novoTipo => {setTipo(novoTipo); mudarRef("Enter", organizacaoRef)}} placeholder="Escolha um tipo..." backgroundColor={"white"} size={"lg"}>
                             <Select.Item label="Recebida" value="recebida" />
                             <Select.Item label="Efetuada" value="efetuada" />
                         </Select>
@@ -190,7 +190,7 @@ const DetalhesDoacao = ({ route }: { route: any }) => {
                     </FormControl>
                     <FormControl isRequired isInvalid={'organizacao' in erros}>
                         <FormControl.Label>Organização:</FormControl.Label>
-                        <Input value={organizacao} ref={organizacaoRef} onKeyPress={(tecla) => mudarRef(tecla, null)} placeholder="Ex.: ONG Brasil" onChangeText={novaOrganizacao => setOrganizacao(novaOrganizacao)} backgroundColor={"white"} size={"lg"}/>
+                        <Input value={organizacao} ref={organizacaoRef} isDisabled={userPermission == "editor" && evento.status == "Encerrado" || userPermission == "usuario"} onKeyPress={(tecla) => mudarRef(tecla, null)} placeholder="Ex.: ONG Brasil" onChangeText={novaOrganizacao => setOrganizacao(novaOrganizacao)} backgroundColor={"white"} size={"lg"}/>
                         {'organizacao' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.organizacao}</FormControl.ErrorMessage> : null}
                     </FormControl>
                     {userPermission == "editor" && evento.status != "Encerrado" || userPermission == "administrador" ? 

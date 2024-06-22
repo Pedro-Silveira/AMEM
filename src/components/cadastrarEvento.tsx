@@ -329,19 +329,19 @@ const CadastrarEvento = () => {
                         <Modal.Body>
                             <Text mb={3}>Envie um e-mail para os usuários envolvidos ou apenas cadastre o evento.</Text>
                             <Box flexDir={"row"} mb={2}>
-                                <Input color={"#bebebe"} flex={1} size={"sm"} mr={2} isDisabled value={usuarios.toString()} />
+                                <Input flex={1} size={"sm"} mr={2} isDisabled value={usuarios.toString()} />
                                 <Tooltip label="Copiar" openDelay={500}>
                                     <Button onPress={() => onCopy(usuarios.toString())} leftIcon={<Icon as={MaterialIcons} name="content-copy" />} size={"sm"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} />
                                 </Tooltip>
                             </Box>
                             <Box flexDir={"row"} mb={2}>
-                                <Input color={"#bebebe"} flex={1} size={"sm"} mr={2} isDisabled value={"Novo Evento: " + nome} />
+                                <Input flex={1} size={"sm"} mr={2} isDisabled value={"Novo Evento: " + nome} />
                                 <Tooltip label="Copiar" openDelay={500}>
                                     <Button onPress={() => onCopy("Novo Evento: " + nome)} leftIcon={<Icon as={MaterialIcons} name="content-copy" />} size={"sm"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} />
                                 </Tooltip>
                             </Box>
                             <Box flexDir={"row"} mb={3}>
-                                <TextArea color={"#bebebe"} flex={1} size={"sm"} mr={2} isDisabled value={"Olá, Prezado(s)! \n\nA pastoral universitária informa que o evento " + nome + " está sendo planejado para ocorrer entre os dias " + dataInicial + " e " + dataFinal + ". Sendo assim, solicitamos a provisão dos seguintes recursos:\n\nLocal do evento: " + local + "\nInvestimento Inicial: " + investimento + "\nObservações: " + observacoes + "\n\nAguardo retorno!"} autoCompleteType={undefined} />
+                                <TextArea flex={1} size={"sm"} mr={2} isDisabled value={"Olá, Prezado(s)! \n\nA pastoral universitária informa que o evento " + nome + " está sendo planejado para ocorrer entre os dias " + dataInicial + " e " + dataFinal + ". Sendo assim, solicitamos a provisão dos seguintes recursos:\n\nLocal do evento: " + local + "\nInvestimento Inicial: " + investimento + "\nObservações: " + observacoes + "\n\nAguardo retorno!"} autoCompleteType={undefined} />
                                 <Tooltip label="Copiar" openDelay={500}>
                                     <Button onPress={() => onCopy("Olá, Prezado(s)! \n\nA pastoral universitária informa que o evento " + nome + " está sendo planejado para ocorrer entre os dias " + dataInicial + " e " + dataFinal + ". Sendo assim, solicitamos a provisão dos seguintes recursos:\n\nLocal do evento: " + local + "\nInvestimento Inicial: " + investimento + "\nObservações: " + observacoes + "\n\nAguardo retorno!")} leftIcon={<Icon as={MaterialIcons} name="content-copy" />} size={"sm"} backgroundColor={"#bebebe"} _hover={{backgroundColor: "#A6A6A6"}} />
                                 </Tooltip>
@@ -349,7 +349,7 @@ const CadastrarEvento = () => {
                         </Modal.Body>
                         <Modal.Footer>
                             <Button.Group space={2}>
-                                <Button backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}} onPress={() => {adicionarEvento('E')}}>Enviar</Button>
+                                <Button backgroundColor={"#16A34A"} _hover={{backgroundColor: "green.700"}} onPress={() => {adicionarEvento('E')}}>Enviar E-mail</Button>
                                 <Button backgroundColor={"#1C3D8C"} _hover={{backgroundColor: "#043878"}} onPress={() => {adicionarEvento('C')}}>Cadastrar</Button>
                             </Button.Group>
                         </Modal.Footer>

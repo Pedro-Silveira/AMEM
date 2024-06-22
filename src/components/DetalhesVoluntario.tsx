@@ -170,27 +170,27 @@ const DetalhesVoluntario = ({ route }: { route: any }) => {
                 <Box style={styles.box2}>
                     <FormControl isRequired isInvalid={'nome' in erros}>
                         <FormControl.Label>Nome Completo:</FormControl.Label>
-                        <Input value={nome} ref={nomeRef} onKeyPress={(tecla) => mudarRef(tecla, cursoRef)} placeholder="Ex.: João Vithor" onChangeText={novoNome => setNome(novoNome)} backgroundColor={"white"} size={"lg"}/>
+                        <Input value={nome} ref={nomeRef} isDisabled={userPermission == "editor" && evento.status == "Encerrado" || userPermission == "usuario"} onKeyPress={(tecla) => mudarRef(tecla, cursoRef)} placeholder="Ex.: João Vithor" onChangeText={novoNome => setNome(novoNome)} backgroundColor={"white"} size={"lg"}/>
                         {'nome' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.nome}</FormControl.ErrorMessage> : null}
                     </FormControl>
                     <FormControl isRequired isInvalid={'curso' in erros}>
                         <FormControl.Label>Curso:</FormControl.Label>
-                        <Input value={curso} ref={cursoRef} onKeyPress={(tecla) => mudarRef(tecla, telefoneRef)} placeholder="Ex.: Ciência da Computação" onChangeText={novoCurso => setCurso(novoCurso)} backgroundColor={"white"} size={"lg"}/>
+                        <Input value={curso} ref={cursoRef} isDisabled={userPermission == "editor" && evento.status == "Encerrado" || userPermission == "usuario"} onKeyPress={(tecla) => mudarRef(tecla, telefoneRef)} placeholder="Ex.: Ciência da Computação" onChangeText={novoCurso => setCurso(novoCurso)} backgroundColor={"white"} size={"lg"}/>
                         {'curso' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.curso}</FormControl.ErrorMessage> : null}
                     </FormControl>
                     <FormControl isInvalid={'telefone' in erros}>
                         <FormControl.Label>Telefone:</FormControl.Label>
-                        <Input value={telefone} ref={telefoneRef} onKeyPress={(tecla) => mudarRef(tecla, emailRef)} placeholder="Ex.: (51) 91234-5678" onChangeText={novoTelefone => formatarTelefone(novoTelefone)} backgroundColor={"white"} size={"lg"}/>
+                        <Input value={telefone} ref={telefoneRef} isDisabled={userPermission == "editor" && evento.status == "Encerrado" || userPermission == "usuario"} onKeyPress={(tecla) => mudarRef(tecla, emailRef)} placeholder="Ex.: (51) 91234-5678" onChangeText={novoTelefone => formatarTelefone(novoTelefone)} backgroundColor={"white"} size={"lg"}/>
                         {'telefone' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.telefone}</FormControl.ErrorMessage> : null}
                     </FormControl>
                     <FormControl isInvalid={'email' in erros}>
                         <FormControl.Label>E-mail:</FormControl.Label>
-                        <Input value={email} ref={emailRef} onKeyPress={(tecla) => mudarRef(tecla, horasRef)} placeholder="Ex.: pedro.silveira@unilasalle.edu.br" onChangeText={novoEmail => setEmail(novoEmail)} backgroundColor={"white"} size={"lg"}/>
+                        <Input value={email} ref={emailRef} isDisabled={userPermission == "editor" && evento.status == "Encerrado" || userPermission == "usuario"} onKeyPress={(tecla) => mudarRef(tecla, horasRef)} placeholder="Ex.: pedro.silveira@unilasalle.edu.br" onChangeText={novoEmail => setEmail(novoEmail)} backgroundColor={"white"} size={"lg"}/>
                         {'email' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.email}</FormControl.ErrorMessage> : null}
                     </FormControl>
                     <FormControl isRequired isInvalid={'horas' in erros}>
                         <FormControl.Label>Horas Complementares:</FormControl.Label>
-                        <Input value={horas} ref={horasRef} onKeyPress={(tecla) => mudarRef(tecla, null)} placeholder="Ex.: 5" onChangeText={novaHoras => setHoras(novaHoras)} backgroundColor={"white"} size={"lg"}/>
+                        <Input value={horas} ref={horasRef} isDisabled={userPermission == "editor" && evento.status == "Encerrado" || userPermission == "usuario"} onKeyPress={(tecla) => mudarRef(tecla, null)} placeholder="Ex.: 5" onChangeText={novaHoras => setHoras(novaHoras)} backgroundColor={"white"} size={"lg"}/>
                         {'horas' in erros ? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.horas}</FormControl.ErrorMessage> : null}
                     </FormControl>
                     {userPermission == "editor" && evento.status != "Encerrado" || userPermission == "administrador" ? 

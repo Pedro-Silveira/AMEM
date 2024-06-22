@@ -297,42 +297,42 @@ const DetalhesEvento = ({ route }: { route: any }) => {
                 <Box style={styles.box2}>
                     <FormControl isRequired isInvalid={'nome' in erros}>
                         <FormControl.Label>Nome:</FormControl.Label>
-                        <Input value={nome} ref={nomeRef} onKeyPress={(tecla) => mudarRef(tecla, dataInicialRef)} placeholder="Ex.: Ação de Graças" onChangeText={novoNome => setNome(novoNome)} backgroundColor={"white"} size={"lg"} />
+                        <Input value={nome} ref={nomeRef} isDisabled={userPermission == "editor" && evento.status == "Encerrado" || userPermission == "usuario"} onKeyPress={(tecla) => mudarRef(tecla, dataInicialRef)} placeholder="Ex.: Ação de Graças" onChangeText={novoNome => setNome(novoNome)} backgroundColor={"white"} size={"lg"} />
                         {'nome' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.nome}</FormControl.ErrorMessage>
                         : null }
                     </FormControl>
                     <FormControl isRequired isInvalid={'dataInicial' in erros}>
                         <FormControl.Label>Data Inicial:</FormControl.Label>
-                        <Input ref={dataInicialRef} value={dataInicial} placeholder="Ex.: 02/08/1972" size={"lg"} backgroundColor={"white"} onChangeText={novaDataInicial => formatarData(novaDataInicial, 'I')} onKeyPress={(tecla) => mudarRef(tecla, dataFinalRef)} />
+                        <Input ref={dataInicialRef} value={dataInicial} isDisabled={userPermission == "editor" && evento.status == "Encerrado" || userPermission == "usuario"} placeholder="Ex.: 02/08/1972" size={"lg"} backgroundColor={"white"} onChangeText={novaDataInicial => formatarData(novaDataInicial, 'I')} onKeyPress={(tecla) => mudarRef(tecla, dataFinalRef)} />
                         {'dataInicial' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.dataInicial}</FormControl.ErrorMessage>
                         : null }
                     </FormControl>
                     <FormControl isRequired isInvalid={'dataFinal' in erros}>
                         <FormControl.Label>Data Final:</FormControl.Label>
-                        <Input ref={dataFinalRef} value={dataFinal} placeholder="Ex.: 09/07/2024" size={"lg"} backgroundColor={"white"} onChangeText={novaDataFinal => formatarData(novaDataFinal, 'F')} onKeyPress={(tecla) => mudarRef(tecla, localRef)} />
+                        <Input ref={dataFinalRef} value={dataFinal} isDisabled={userPermission == "editor" && evento.status == "Encerrado" || userPermission == "usuario"} placeholder="Ex.: 09/07/2024" size={"lg"} backgroundColor={"white"} onChangeText={novaDataFinal => formatarData(novaDataFinal, 'F')} onKeyPress={(tecla) => mudarRef(tecla, localRef)} />
                         {'dataFinal' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.dataFinal}</FormControl.ErrorMessage>
                         : null }
                     </FormControl>
                     <FormControl isRequired isInvalid={'local' in erros}>
                         <FormControl.Label>Local:</FormControl.Label>
-                        <Input value={local} ref={localRef} onKeyPress={(tecla) => mudarRef(tecla, investimentoRef)} placeholder="Ex.: Capela São José" onChangeText={novoLocal => setLocal(novoLocal)} backgroundColor={"white"} size={"lg"}/>
+                        <Input value={local} ref={localRef} isDisabled={userPermission == "editor" && evento.status == "Encerrado" || userPermission == "usuario"} onKeyPress={(tecla) => mudarRef(tecla, investimentoRef)} placeholder="Ex.: Capela São José" onChangeText={novoLocal => setLocal(novoLocal)} backgroundColor={"white"} size={"lg"}/>
                         {'local' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.local}</FormControl.ErrorMessage>
                         : null }
                     </FormControl>
                     <FormControl isRequired isInvalid={'investimento' in erros}>
                         <FormControl.Label>Investimento:</FormControl.Label>
-                        <Input value={investimento} ref={investimentoRef} onKeyPress={(tecla) => mudarRef(tecla, observacoesRef)} placeholder="Ex.: 1.080,00" onChangeText={novoInvestimento => formatarInvestimento(novoInvestimento)} backgroundColor={"white"} size={"lg"}/>
+                        <Input value={investimento} ref={investimentoRef} isDisabled={userPermission == "editor" && evento.status == "Encerrado" || userPermission == "usuario"} onKeyPress={(tecla) => mudarRef(tecla, observacoesRef)} placeholder="Ex.: 1.080,00" onChangeText={novoInvestimento => formatarInvestimento(novoInvestimento)} backgroundColor={"white"} size={"lg"}/>
                         {'investimento' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.investimento}</FormControl.ErrorMessage>
                         : null }
                     </FormControl>
                     <FormControl isInvalid={'observacoes' in erros}>
                         <FormControl.Label>Observações:</FormControl.Label>
-                        <TextArea value={observacoes} ref={observacoesRef} onKeyPress={(tecla) => mudarRef(tecla, null)} onChangeText={novaObservacao => setObservacoes(novaObservacao)} backgroundColor={"white"} w="100%" h={100} autoCompleteType={undefined} />
+                        <TextArea value={observacoes} ref={observacoesRef} isDisabled={userPermission == "editor" && evento.status == "Encerrado" || userPermission == "usuario"} onKeyPress={(tecla) => mudarRef(tecla, null)} onChangeText={novaObservacao => setObservacoes(novaObservacao)} backgroundColor={"white"} w="100%" h={100} autoCompleteType={undefined} />
                         {'observacoes' in erros ?
                             <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>{erros.observacoes}</FormControl.ErrorMessage>
                         : null }
@@ -413,8 +413,8 @@ const DetalhesEvento = ({ route }: { route: any }) => {
                                     <Box bg={isHovered ? "coolGray.100" : null} rounded={isHovered ? 5 : 0} key={index} borderBottomWidth={1} borderBottomColor={"#D4D4D4"} py="2" pl="4" pr={5}>
                                         <HStack space={[2, 3]} justifyContent="space-between" alignItems={"center"}>
                                             <VStack>
-                                                <Text bold>{item.organizacao}</Text>
-                                                <Text>{item.quantidade} {item.unidade} {item.material}.</Text>
+                                                <Text bold>{item.quantidade} {item.unidade} de {item.material}</Text>
+                                                <Text>por {item.organizacao}.</Text>
                                             </VStack>
                                             {item.tipo == "efetuada" ? <Icon as={<MaterialIcons name={"arrow-circle-right"} />} size={5} color="#E11D48" /> : <Icon as={<MaterialIcons name={"arrow-circle-left"} />} size={5} color="#16A34A" />}
                                         </HStack>
